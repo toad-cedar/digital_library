@@ -1,0 +1,19 @@
+# Dependencies
+__pycache__/
+node_modules/
+vendor/
+*.pyc
+
+# Directories & files
+dist/
+dist-ssr/
+build/
+*.log
+*.local
+*.code-workspace
+*.zip
+*.rar
+
+# Secrets
+.env
+.secrets/

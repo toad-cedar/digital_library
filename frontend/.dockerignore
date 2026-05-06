@@ -1,0 +1,13 @@
+.coverage
+.git
+.gitignore
+README.md
+Dockerfile
+.dockerignore
+.env
+node_modules
+npm-debug.log
+/dist
+
+**/bin
+**/obj
