@@ -173,7 +173,7 @@ class UploadService:
     tag_objects = await self.document_repo.get_or_create_tags(doc_data.tag_names)
 
     from sqlalchemy import insert
-    from app.models.orm_models import document_tag_link # Импортируем вспомогательную таблицу
+    from app.models.orm_models import documents_search_tags # Импортируем вспомогательную таблицу
 
     if tag_objects: # Если есть теги для привязки
       # Подготовим список словарей для вставки
@@ -182,7 +182,7 @@ class UploadService:
           for tag_obj in tag_objects
       ]
       # Выполним вставку через Core API
-      stmt = insert(document_tag_link).values(tag_links_to_add)
+      stmt = insert(documents_search_tags).values(tag_links_to_add)
       await self.db_session.execute(stmt)
 
     await self.db_session.commit()
