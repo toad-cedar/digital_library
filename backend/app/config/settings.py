@@ -30,6 +30,12 @@ class Settings(BaseSettings):
   ELASTICSEARCH_HOST: str = Field(default='localhost', alias='ELASTICSEARCH_HOST')
   ELASTICSEARCH_PORT: int = Field(default=9200, alias='ELASTICSEARCH_PORT')
   
+  ALLOWED_ORIGINS: list[str] = Field(
+    default=["http://localhost:5173"],
+    alias="ALLOWED_ORIGINS",
+    description="Разрешённые CORS-источники"
+  )
+  
   
   model_config = SettingsConfigDict(
     env_file=Path(__file__).resolve().parents[3] / '.env',
