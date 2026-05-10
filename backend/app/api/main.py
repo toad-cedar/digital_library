@@ -1,13 +1,13 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.api.routers import documents, search, uploads, auth
-from app.config.settings import settings
+from app.config.settings import get_settings
 
 app = FastAPI(title="Электронная библиотека для технических специальностей", version="0.1.0")
 
 app.add_middleware(
   CORSMiddleware,
-  allow_origins=settings.ALLOWED_ORIGINS,
+  allow_origins=get_settings().ALLOWED_ORIGINS,
   allow_credentials=True,
   allow_methods=["*"], # GET, POST, PUT, DELETE, PATCH, OPTIONS
   allow_headers=["*"]  # Authorization, Content-Type и т.д.

@@ -1,10 +1,10 @@
 from elasticsearch import Elasticsearch
-from app.config.settings import settings
+from app.config.settings import get_settings
 
 def get_elastic_client():
   client = Elasticsearch(
-    hosts=[f"http://{settings.ELASTICSEARCH_HOST}:{settings.ELASTICSEARCH_PORT}"],
-    basic_auth=("elastic", settings.ELASTICSEARCH_PASSWORD),
+    hosts=[f"http://{get_settings().ELASTICSEARCH_HOST}:{get_settings().ELASTICSEARCH_PORT}"],
+    basic_auth=("elastic", get_settings().ELASTICSEARCH_PASSWORD),
     verify_certs=False,
     request_timeout=30,
     retry_on_timeout=True,

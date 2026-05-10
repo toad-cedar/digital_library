@@ -3,7 +3,7 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.ext.asyncio import AsyncSession
 from jose import jwt, JWTError
 from app.config.database import get_db_session
-from app.config.settings import settings
+from app.config.settings import get_settings
 from app.models.orm_models import User
 from app.repos.user_repo import UserRepository
 
@@ -23,7 +23,7 @@ async def get_current_user(
   )
 
   try:
-    payload = jwt.decode(credentials.credentials, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+    payload = jwt.decode(credentials.credentials, get_settings().SECRET_KEY, algorithms=[get_settings().ALGORITHM])
     username: str = payload.get("sub")
     if username is None:
       raise unauthorized_exception
