@@ -3,9 +3,9 @@ from sqlalchemy.ext.asyncio  import AsyncSession
 from app.config.database     import get_db_session
 from app.services.search_service import SearchService
 from app.repos.document_repo import DocumentRepository
-from app.schemas.search    import SearchQuery
-from app.schemas.document  import DocumentListResponse, DocumentOut, StatusInfo, FormatInfo
-from app.schemas.user      import UserShort
+from app.schemas import SearchQuery
+from app.schemas import DocumentListResponse, DocumentOut, StatusInfo, FormatInfo
+from app.schemas import UserShort
 from app.models.orm_models import Document
 from typing import List
 
