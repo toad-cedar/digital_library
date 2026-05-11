@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.api.routers import documents, search, uploads, auth
 from app.config.settings import get_settings
 from app.models import __all__
+from app.schemas import __all__
 
 app = FastAPI(title="Электронная библиотека для технических специальностей", version="0.1.0")
 
