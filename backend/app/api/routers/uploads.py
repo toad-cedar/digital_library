@@ -8,8 +8,8 @@ from app.services.minio_service  import MinioService
 from app.services.search_service import SearchService
 from app.config.database  import get_db_session
 from app.config.deps      import get_current_user
-from app.schemas.upload   import UploadRequestCreate, UploadRequestOut
-from app.schemas.document import DocumentCreate
+from app.schemas import UploadRequestCreate, UploadRequestOut
+from app.schemas import DocumentCreate
 from app.models.orm_models import User
 from app.repos.status_repo import StatusRepository
 

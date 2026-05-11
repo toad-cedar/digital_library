@@ -8,8 +8,8 @@ from app.repos.status_repo import StatusRepository
 from app.services.minio_service import MinioService
 from app.services.search_service import SearchService
 from app.models.orm_models import User, Document
-from app.schemas.upload import UploadRequestCreate
-from app.schemas.document import DocumentCreate
+from app.schemas import UploadRequestCreate
+from app.schemas import DocumentCreate
 from PIL import Image # Pillow: работа с изображениями
 
 import fitz # PyMuPDF

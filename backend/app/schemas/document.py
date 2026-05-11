@@ -1,70 +1,54 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, ConfigDict
 from datetime import datetime
 from typing import List, Optional
-from app.schemas.user import UserShort
 
-class StatusInfo(BaseModel): # для информации о статусе
-  id: int
-  name: str
-
-class FormatInfo(BaseModel):
-  id: int
-  name: str
-
-class DocumentOut(BaseModel):
+class DocumentRead(BaseModel):
   id: int
   title: str
   description: Optional[str] = None
-  author: Optional[str] = None
-  upload_date: datetime
   publish_date: datetime
-  uploader: UserShort
-  minio_bucket: str # Бакет основного файла
-  cover_bucket: Optional[str] = None # Бакет обложки
-  format: FormatInfo
+  uploader_id: int
+  minio_bucket: str
   file_original_name: Optional[str] = None
+  file_mime: str
   file_size: int
+  file_hash: str
+  format: str
   converted_to_pdf: bool
-  status_name: StatusInfo 
-  tags: List[str]
-  cover_url: Optional[str] = None # обложка
-  
-  class Config:
-    from_attributes = True
-
-
-class DocumentListResponse(BaseModel):
-  total: int
-  offset: int
-  limit: int
-  documents: List[DocumentOut]
-  
-  class Config:
-    from_attributes = True
-
-
-class PreviewUrlResponse(BaseModel):
-  url: str
-  expires_at: datetime
-  
-  class Config:
-    from_attributes = True
-
+  visibility_status: str
+  created_at: datetime
+  model_config = ConfigDict(from_attributes=True)
 
 class DocumentCreate(BaseModel):
-  title: str
+  title: str = Field(min_length=1, max_length=255)
   description: Optional[str] = None
-  author: Optional[str] = None
-  tag_names: List[str]
-  # Поля, которые заполняются бэкендом: uploader_id (из токена), upload_date, file_* и т.д.
-  # Эти поля не передаются из API.
-
+  tag_names: List[str] = []
 
 class DocumentUpdate(BaseModel):
-  title: Optional[str] = None
+  title: Optional[str] = Field(None, min_length=1, max_length=255)
   description: Optional[str] = None
-  author: Optional[str] = None
   tag_names: Optional[List[str]] = None
 
-  class Config:
-    extra = 'forbid'
+class VisibilityUpdate(BaseModel):
+  visibility_status: str # published | unlisted | archived
+
+class TagAssignRequest(BaseModel):
+  tags: List[str]
+
+class VersionRead(BaseModel):
+  version_number: int
+  created_at: datetime
+  file_format: str
+  file_size: int
+  change_notes: Optional[str] = None
+  model_config = ConfigDict(from_attributes=True)
+
+class DownloadUrlResponse(BaseModel):
+  url: str
+  expires_at: datetime
+
+class DocumentListResponse(BaseModel):
+  documents: List[DocumentRead]
+  total: int
+  page: int # offset: int
+  page_size: int # limit: int

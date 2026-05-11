@@ -1,22 +1,27 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from datetime import datetime
 from typing import Optional
 
-class UploadRequestCreate(BaseModel):
-  original_name: str
-  file_hash: str
-  # остальные поля заполняются бэкендом: user_id, minio_path, status, upload_date
-
-
-class UploadRequestOut(BaseModel):
+class UploadRequestRead(BaseModel):
   id: int
-  user_id: int
-  original_name: str
-  minio_path: str
-  upload_date: datetime
+  title: str
+  uploader_id: int
+  file_original_name: Optional[str] = None
+  file_mime: str
+  file_size: int
   file_hash: str
-  status_id: int
-  moderator_id: Optional[int] = None
+  workflow_status: str
+  rejection_reason: Optional[str] = None
+  created_at: datetime
+  model_config = ConfigDict(from_attributes=True)
 
-  class Config:
-    from_attributes = True
+class UploadStatusResponse(BaseModel):
+  upload_id: int
+  workflow_status: str
+  processing_stage: Optional[str] = None  # e.g., "scanning", "ocr", "indexing"
+
+class ProcessingMetadata(BaseModel):
+  risk_score: int = 0
+  ocr_text_found: bool = False
+  mime_validated: bool = True
+  conversion_triggered: bool = False

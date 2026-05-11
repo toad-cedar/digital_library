@@ -1,43 +1,49 @@
-from pydantic import BaseModel, EmailStr, field_validator
-from typing import Optional
-import re # regex
+from pydantic import BaseModel, EmailStr, Field, ConfigDict, field_validator
+import re
 
-class Token(BaseModel):
-  access_token: str
-  token_type: str
-
-class TokenData(BaseModel):
-  username: Optional[str] = None
-
-class UserLogin(BaseModel):
-  username: str
-  password: str
-
-class UserCreate(BaseModel):
-  username: str
+class LoginRequest(BaseModel):
   email: EmailStr
-  password: str
+  password: str = Field(min_length=8)
 
-  @field_validator('username')
-  def validate_username(cls, v):
-    # Проверка формата username: строчный, 3-100 символов, только буквы, цифры, подчеркивание, начинается с буквы
-    if not re.match(r'^[a-z][a-z0-9_]{2,99}$', v):
-      raise ValueError('Username must start with a letter, contain 3-100 characters, and include only lowercase letters, numbers, and underscores.')
-    if 'admin' in v.lower() or 'root' in v.lower():
-      raise ValueError('Username cannot contain "admin" or "root".')
-    return v
-
+class RegisterRequest(BaseModel):
+  username: str = Field(min_length=3, max_length=100, pattern=r"^[a-z][a-z0-9_]{2,99}$")
+  email: EmailStr
+  password: str = Field(min_length=8)
+  
   @field_validator('password')
-  def validate_password(cls, v):
-    # Простая проверка сложности пароля (длина, наличие заглавной, строчной, цифры, символа)
-    if len(v) < 8:
-      raise ValueError('Password must be at least 8 characters long.')
-    if not re.search(r'[A-Z]', v):
-      raise ValueError('Password must contain at least one uppercase letter.')
-    if not re.search(r'[a-z]', v):
-      raise ValueError('Password must contain at least one lowercase letter.')
-    if not re.search(r'\d', v):
-      raise ValueError('Password must contain at least one digit.')
-    if not re.search(r'[!@#$%^&*(),.?":{}|<>]', v):
-      raise ValueError('Password must contain at least one special character.')
+  @classmethod
+  def check_password_complexity(cls, v: str) -> str:
+    if not re.search(r'[A-Z]', v): raise ValueError("Требуется заглавная буква")
+    if not re.search(r'[a-z]', v): raise ValueError("Требуется строчная буква")
+    if not re.search(r'\d', v):    raise ValueError("Требуется цифра")
+    if not re.search(r'[!@#$%^&*(),.?":{}|<>]', v): raise ValueError("Требуется спецсимвол")
+    if 'admin' in v.lower() or 'root' in v.lower(): raise ValueError("Пароль содержит запрещённые слова")
     return v
+
+class TokenResponse(BaseModel):
+  access_token: str
+  refresh_token: str
+  token_type: str = "bearer"
+  model_config = ConfigDict(
+    json_schema_extra=
+    {
+      "example": 
+      {
+        "access_token": "...", 
+        "refresh_token": "..."
+      }
+    } 
+  )
+
+class RefreshRequest(BaseModel):
+  refresh_token: str
+
+class RecoveryRequest(BaseModel):
+  email: EmailStr
+
+class ResetPasswordRequest(BaseModel):
+  token: str
+  new_password: str = Field(min_length=8)
+
+class MfaVerifyRequest(BaseModel):
+  code: str = Field(min_length=6, max_length=6, pattern=r"^\d{6}$")

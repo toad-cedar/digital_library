@@ -6,8 +6,8 @@ from app.config.database import get_db_session
 from app.config.security import create_access_token, hash_password, verify_password
 from app.config.deps     import get_current_user
 from app.models.orm_models import User
-from app.schemas.auth    import UserLogin, UserCreate, Token
-from app.schemas.user    import UserOut
+from app.schemas import UserLogin, UserCreate, Token
+from app.schemas import UserOut
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 

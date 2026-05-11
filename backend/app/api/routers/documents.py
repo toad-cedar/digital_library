@@ -3,8 +3,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.config.database   import get_db_session
 from app.config.deps       import get_current_user
 from app.models.orm_models import User
-from app.schemas.document  import DocumentOut, DocumentListResponse, PreviewUrlResponse, StatusInfo, FormatInfo
-from app.schemas.user      import UserShort
+from app.schemas import DocumentOut, DocumentListResponse, PreviewUrlResponse, StatusInfo, FormatInfo
+from app.schemas import UserShort
 from app.repos.document_repo    import DocumentRepository
 from app.services.minio_service import MinioService
 from pydantic import BaseModel

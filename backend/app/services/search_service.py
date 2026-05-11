@@ -1,7 +1,7 @@
 from typing import Dict, List
 from app.integrations.elastic_client import elastic_client
 from app.models.orm_models import Document
-from app.schemas.search import SearchQuery
+from app.schemas import SearchQuery
 import logging
 
 logger = logging.getLogger(__name__)
