@@ -1,62 +1,56 @@
-from typing import List, Optional
+from typing import List, Optional, Tuple
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, update, delete
-from app.models.orm_models import UploadRequest, UploadStatus
+from sqlalchemy import select, func
+from app.models.document_models import UploadRequest
+from app.config.database import WorkflowEnum
+from app.repos.base_repo import GenericRepository
 
 
 class UploadRequestRepository:
   def __init__(self, db_session: AsyncSession):
     self.db_session = db_session
+    self.base = GenericRepository(db_session, UploadRequest)
 
   async def get_by_id(self, upload_id: int) -> Optional[UploadRequest]:
-    """Получает заявку на загрузку по ID."""
-    stmt = select(UploadRequest).where(UploadRequest.id == upload_id)
-    result = await self.db_session.execute(stmt)
-    return result.scalar_one_or_none()
+    return await self.base.get_by_id(upload_id)
 
-  async def get_requests_for_user(self, user_id: int, offset: int = 0, limit: int = 10) -> List[UploadRequest]:
-    """Получает список заявок пользователя с пагинацией."""
-    stmt = select(UploadRequest).where(UploadRequest.user_id == user_id).offset(offset).limit(limit)
-    result = await self.db_session.execute(stmt)
-    return result.scalars().all()
+  async def get_by_user(self, user_id: int, offset: int = 0, limit: int = 10) -> Tuple[List[UploadRequest], int]:
+    base = select(UploadRequest).where(UploadRequest.uploader_id == user_id)
+    count = (await self.db_session.execute(select(func.count(UploadRequest.id)).where(UploadRequest.uploader_id == user_id))).scalar() or 0
+    items = (await self.db_session.execute(base.order_by(UploadRequest.created_at.desc()).offset(offset).limit(limit))).scalars().all()
+    return items, count
 
-  async def get_all_requests(self, offset: int = 0, limit: int = 10) -> List[UploadRequest]:
-    """Получает список всех заявок (для модераторов) с пагинацией."""
-    stmt = select(UploadRequest).offset(offset).limit(limit)
-    result = await self.db_session.execute(stmt)
-    return result.scalars().all()
+  async def get_all(
+    self,
+    workflow_status: Optional[WorkflowEnum] = None,
+    offset: int = 0,
+    limit: int = 10
+  ) -> Tuple[List[UploadRequest], int]:
+    base = select(UploadRequest)
+    count_stmt = select(func.count(UploadRequest.id))
 
-  async def create(self, upload_request: UploadRequest) -> UploadRequest:
-    """Создаёт новую заявку на загрузку."""
-    self.db_session.add(upload_request)
-    await self.db_session.flush() # Получаем ID
-    return upload_request
+    if workflow_status is not None:
+      base = base.where(UploadRequest.workflow_status == workflow_status)
+      count_stmt = count_stmt.where(UploadRequest.workflow_status == workflow_status)
 
-  async def update_status(self, upload_id: int, status_id: int, moderator_id: Optional[int] = None) -> Optional[UploadRequest]:
-    """Обновляет статус заявки и, опционально, ID модератора."""
-    stmt = (
-      update(UploadRequest)
-      .where(UploadRequest.id == upload_id)
-      .values(status_id=status_id, moderator_id=moderator_id)
-      .returning(UploadRequest)
-    )
-    result = await self.db_session.execute(stmt)
-    updated_request = result.scalar_one_or_none()
-    if updated_request:
-      await self.db_session.commit()
-      await self.db_session.refresh(updated_request)
-    else:
-      await self.db_session.rollback()
-    return updated_request
+    total = (await self.db_session.execute(count_stmt)).scalar() or 0
+    items = (await self.db_session.execute(base.order_by(UploadRequest.created_at.desc()).offset(offset).limit(limit))).scalars().all()
+    return items, total
+
+  async def create(self, request: UploadRequest) -> UploadRequest:
+    return await self.base.create(request)
+
+  async def update_workflow_status(
+    self,
+    upload_id: int,
+    status: WorkflowEnum,
+    moderator_id: Optional[int] = None,
+    rejection_reason: Optional[str] = None
+  ) -> Optional[UploadRequest]:
+    data = {"workflow_status": status, "moderator_id": moderator_id}
+    if rejection_reason is not None:
+      data["rejection_reason"] = rejection_reason
+    return await self.base.update(upload_id, data)
 
   async def delete(self, upload_id: int) -> bool:
-    """Удаляет заявку на загрузку по ID."""
-    stmt = delete(UploadRequest).where(UploadRequest.id == upload_id)
-    result = await self.db_session.execute(stmt)
-    if result.rowcount > 0:
-      await self.db_session.commit()
-      return True
-    else:
-      await self.db_session.rollback()
-      return False
-
+    return await self.base.delete(upload_id)
