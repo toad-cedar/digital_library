@@ -11,7 +11,7 @@ class AuditLog(Base):
   __tablename__ = 'audit_logs'
   
   id:          Mapped[int]  = mapped_column(primary_key=True, autoincrement=True, index=True)
-  user_id:     Mapped[int]  = mapped_column(ForeignKey('users.id'))
+  user_id:     Mapped[int]  = mapped_column(ForeignKey('users.id', ondelete='SET NULL'))
   action:      Mapped[str]  = mapped_column(String(50)) # upload / delete / approve / reject
   target_uuid: Mapped[UUID] = mapped_column(Uuid(as_uuid=True)) # ID целевого объекта
   target_type: Mapped[AuditTargetEnum] = mapped_column(Enum(AuditTargetEnum, name='audit_enum', native_enum=True)) # AuditTargetEnum(document / user / group)
@@ -27,7 +27,7 @@ class Notification(Base):
   __tablename__ = 'notifications'
   
   id:          Mapped[int]  = mapped_column(primary_key=True, autoincrement=True, index=True)
-  user_id:     Mapped[int]  = mapped_column(ForeignKey('users.id'))
+  user_id:     Mapped[int]  = mapped_column(ForeignKey('users.id', ondelete='CASCADE'))
   source_type: Mapped[str]  = mapped_column(String(50)) # document / upload_requests / group / report / system
   source_id:   Mapped[int]  # Номер строки сущности source_type
   event_type:  Mapped[str]  = mapped_column(String(50)) # approved / rejected / invited / new_material / sync_conflict / password_reset
@@ -46,7 +46,7 @@ class RegistryDevice(Base):
   __tablename__ = 'registry_devices'
 
   id:          Mapped[int]  = mapped_column(primary_key=True, autoincrement=True, index=True)
-  user_id:     Mapped[int]  = mapped_column(ForeignKey('users.id')) # Владелец
+  user_id:     Mapped[int]  = mapped_column(ForeignKey('users.id', ondelete='CASCADE')) # Владелец
   device_uuid: Mapped[UUID] = mapped_column(Uuid(as_uuid=True), unique=True) # Генерация при первом запуске клиента
   device_name: Mapped[str]  = mapped_column(String(100)) # Имя устройства/пользователя
   platform:    Mapped[str]  = mapped_column(String(20)) # ОС/платформа
@@ -62,8 +62,8 @@ class SyncState(Base):
   __tablename__ = 'sync_states'
   
   id:              Mapped[int]  = mapped_column(primary_key=True, autoincrement=True, index=True)
-  user_id:         Mapped[int]  = mapped_column(ForeignKey('users.id')) # Владелец
-  device_id:       Mapped[int]  = mapped_column(ForeignKey('registry_devices.id')) # Устройство
+  user_id:         Mapped[int]  = mapped_column(ForeignKey('users.id', ondelete='CASCADE')) # Владелец
+  device_id:       Mapped[int]  = mapped_column(ForeignKey('registry_devices.id', ondelete='CASCADE')) # Устройство
   entity_type:     Mapped[str]  = mapped_column(String(20)) # document / folder / tag
   entity_id:       Mapped[UUID] = mapped_column(Uuid(as_uuid=True)) # ID сущности
   local_checksum:  Mapped[str]  = mapped_column(String(64)) # SHA-256 локального файла

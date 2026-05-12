@@ -16,10 +16,10 @@ class FavoriteFolder(Base):
   )
   
   id:          Mapped[int]        = mapped_column(primary_key=True, autoincrement=True, index=True)
-  user_id:     Mapped[int]        = mapped_column(ForeignKey('users.id')) # Владелец
+  user_id:     Mapped[int]        = mapped_column(ForeignKey('users.id', ondelete='CASCADE')) # Владелец
   folder_name: Mapped[str]        = mapped_column(String(100)) # ! CHECK: длина Имя папки
   description: Mapped[str | None] = mapped_column(String(500)) # ! CHECK: длина
-  parent_folder_id: Mapped[int | None] = mapped_column(ForeignKey('favorite_folders.id'), nullable=True) # Рекурсивная ссылка
+  parent_folder_id: Mapped[int | None] = mapped_column(ForeignKey('favorite_folders.id', ondelete='CASCADE'), nullable=True) # Рекурсивная ссылка
   created_at:  Mapped[datetime]  = mapped_column(DateTime(timezone=True), server_default=func.now())
 
   user          = relationship("User", back_populates="favorite_folders")
@@ -32,8 +32,8 @@ class FavoriteItem(Base):
   __tablename__ = 'favorite_items'
   
   id:          Mapped[int] = mapped_column(primary_key=True, autoincrement=True, index=True)
-  document_id: Mapped[int] = mapped_column(ForeignKey('documents.id')) # Документ
-  folder_id:   Mapped[int] = mapped_column(ForeignKey('favorite_folders.id')) # Папка
+  document_id: Mapped[int] = mapped_column(ForeignKey('documents.id', ondelete='CASCADE')) # Документ
+  folder_id:   Mapped[int] = mapped_column(ForeignKey('favorite_folders.id', ondelete='CASCADE')) # Папка
 
   document = relationship("Document",       back_populates="favorite_items")
   folder   = relationship("FavoriteFolder", back_populates="items")

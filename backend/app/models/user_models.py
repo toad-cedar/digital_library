@@ -7,8 +7,8 @@ from app.models.group_models import groups_users
 
 roles_permissions = Table(
   'roles_permissions', Base.metadata,
-  Column('role_id',       Integer, ForeignKey('roles.id'),       primary_key=True),
-  Column('permission_id', Integer, ForeignKey('permissions.id'), primary_key=True)
+  Column('role_id',       Integer, ForeignKey('roles.id',       ondelete='CASCADE'), primary_key=True),
+  Column('permission_id', Integer, ForeignKey('permissions.id', ondelete='CASCADE'), primary_key=True)
 )
 
 class User(Base):
@@ -33,10 +33,10 @@ class User(Base):
   registration_date:   Mapped[datetime]   = mapped_column(DateTime(timezone=True), server_default=func.now())
   created_at:          Mapped[datetime]   = mapped_column(DateTime(timezone=True), server_default=func.now())
   updated_at:          Mapped[datetime]   = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
-  role_id:             Mapped[int | None]        = mapped_column(ForeignKey('roles.id')) 
+  role_id:             Mapped[int | None] = mapped_column(ForeignKey('roles.id', ondelete='SET NULL'))
 
   role                 = relationship("Role",            back_populates="users")
-  uploads_created      = relationship("UploadRequest", foreign_keys="UploadRequest.uploader_id", back_populates="user")
+  uploads_created      = relationship("UploadRequest",   foreign_keys="UploadRequest.uploader_id", back_populates="user")
   documents_uploaded   = relationship("Document",        back_populates="uploader")
   versions_uploaded    = relationship("HistoryVersion",  foreign_keys="HistoryVersion.uploaded_by", back_populates="uploader")
   invitations_created  = relationship("GroupInvitation", foreign_keys="GroupInvitation.created_by", back_populates="creator") 

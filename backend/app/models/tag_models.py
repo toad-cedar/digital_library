@@ -4,8 +4,8 @@ from app.config.database import Base
 
 documents_search_tags = Table(
   'documents_search_tags', Base.metadata,
-  Column('document_id', Integer, ForeignKey('documents.id'),   primary_key=True),
-  Column('tag_id',      Integer, ForeignKey('search_tags.id'), primary_key=True)
+  Column('document_id', Integer, ForeignKey('documents.id',   ondelete='CASCADE'), primary_key=True),
+  Column('tag_id',      Integer, ForeignKey('search_tags.id', ondelete='CASCADE'), primary_key=True)
 )
 
 class SearchTag(Base):
