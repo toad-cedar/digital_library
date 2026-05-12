@@ -1,11 +1,13 @@
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncAttrs
 from sqlalchemy.orm import DeclarativeBase
+from sqlalchemy import MetaData
+
 from app.config.settings import get_settings
 from enum import Enum
 
 # Движок
 engine = create_async_engine(
-  get_settings().DATABASE_URL, 
+  get_settings().get_async_db_url, 
   pool_pre_ping=True, # Проверка соединения
   echo=False # Откл. вывод SQL-запросов в консось
 )
