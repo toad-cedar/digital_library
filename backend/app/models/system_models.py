@@ -25,13 +25,13 @@ class AuditLog(Base):
 class Notification(Base):
   __tablename__ = 'notifications'
   
-  id:          Mapped[int]  = mapped_column(primary_key=True, autoincrement=True, index=True)
+  id:          Mapped[int]  = mapped_column(primary_key=True, autoincrement=True)
   user_id:     Mapped[int]  = mapped_column(ForeignKey('users.id', ondelete='CASCADE'), index=True)
   source_type: Mapped[str]  = mapped_column(String(50)) # document / upload_requests / group / report / system
   source_id:   Mapped[int]  # Номер строки сущности source_type
   event_type:  Mapped[str]  = mapped_column(String(50)) # approved / rejected / invited / new_material / sync_conflict / password_reset
   title:       Mapped[str]  = mapped_column(String(255)) # Заголовок
-  content:     Mapped[dict] = mapped_column(JSONB)
+  content:     Mapped[dict] = mapped_column(JSONB, server_default=text("'{}'::jsonb"))
   channel:     Mapped[NotificationChannelEnum] = mapped_column(Enum(NotificationChannelEnum, name='notification_channel_enum', native_enum=True)) # NotificationChannelEnum(in_app, email)
   is_read:     Mapped[bool] = mapped_column(default=False)
   read_at:     Mapped[datetime | None] = mapped_column(DateTime()) # Время прочтения
@@ -69,7 +69,7 @@ class SyncState(Base):
   server_checksum: Mapped[str]  = mapped_column(String(64)) # SHA-256 серверного файла
   last_sync_at:    Mapped[datetime] = mapped_column(DateTime()) # Время последней синхронизации
   network_status:  Mapped[NetworkEnum] = mapped_column(Enum(NetworkEnum, name='network_enum', native_enum=True), default=NetworkEnum.SYNCED) # NetworkEnum(synced / pending / conflict)
-  conflict_resolution: Mapped[ConflictResolutionEnum | None] = mapped_column(Enum(ConflictResolutionEnum, name='conflict_resolution_enum', native_enum=True)) # ConflictResolutionEnum(server_wins / client_wins / merge)
+  conflict_resolution: Mapped[ConflictResolutionEnum] = mapped_column(Enum(ConflictResolutionEnum, name='conflict_resolution_enum', native_enum=True)) # ConflictResolutionEnum(server_wins / client_wins / merge)
   
   user   = relationship("User", back_populates="sync_states")
   device = relationship("RegistryDevice", back_populates="sync_states")
