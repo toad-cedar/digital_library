@@ -1,10 +1,9 @@
-from sqlalchemy     import String, Enum, DateTime, ForeignKey, Uuid, func, text
+from sqlalchemy     import String, Enum, DateTime, ForeignKey, func, text
 from sqlalchemy.orm import relationship, Mapped, mapped_column
-from sqlalchemy.dialects.postgresql import JSONB, INET
+from sqlalchemy.dialects.postgresql import JSONB, INET, UUID
 
 from app.config.database import Base, AuditTargetEnum, NotificationChannelEnum, ConflictResolutionEnum, NetworkEnum
 from datetime import datetime
-from uuid import UUID
 
 
 class AuditLog(Base):
@@ -13,7 +12,7 @@ class AuditLog(Base):
   id:          Mapped[int]  = mapped_column(primary_key=True, autoincrement=True, index=True)
   user_id:     Mapped[int | None]  = mapped_column(ForeignKey('users.id', ondelete='SET NULL'), index=True)
   action:      Mapped[str]  = mapped_column(String(50)) # upload / delete / approve / reject
-  target_uuid: Mapped[UUID] = mapped_column(Uuid(as_uuid=True)) # ID целевого объекта
+  target_uuid: Mapped[UUID] = mapped_column(UUID(as_uuid=True)) # ID целевого объекта
   target_type: Mapped[AuditTargetEnum] = mapped_column(Enum(AuditTargetEnum, name='audit_enum', native_enum=True)) # AuditTargetEnum(document / user / group)
   details:     Mapped[dict] = mapped_column(JSONB, server_default=text("'{}'::jsonb"))
   ip_address:  Mapped[str | None] = mapped_column(INET)
@@ -47,7 +46,7 @@ class RegistryDevice(Base):
 
   id:          Mapped[int]  = mapped_column(primary_key=True, autoincrement=True, index=True)
   user_id:     Mapped[int]  = mapped_column(ForeignKey('users.id', ondelete='CASCADE'), index=True) # Владелец
-  device_uuid: Mapped[UUID] = mapped_column(Uuid(as_uuid=True), unique=True) # Генерация при первом запуске клиента
+  device_uuid: Mapped[UUID] = mapped_column(UUID(as_uuid=True), unique=True) # Генерация при первом запуске клиента
   device_name: Mapped[str]  = mapped_column(String(100)) # Имя устройства/пользователя
   platform:    Mapped[str]  = mapped_column(String(20)) # ОС/платформа
   app_version: Mapped[str]  = mapped_column(String(20)) # Семантическое версионирование
@@ -65,7 +64,7 @@ class SyncState(Base):
   user_id:         Mapped[int]  = mapped_column(ForeignKey('users.id', ondelete='CASCADE'), index=True) # Владелец
   device_id:       Mapped[int]  = mapped_column(ForeignKey('registry_devices.id', ondelete='CASCADE'), index=True) # Устройство
   entity_type:     Mapped[str]  = mapped_column(String(20)) # document / folder / tag
-  entity_id:       Mapped[UUID] = mapped_column(Uuid(as_uuid=True)) # ID сущности
+  entity_id:       Mapped[UUID] = mapped_column(UUID(as_uuid=True)) # ID сущности
   local_checksum:  Mapped[str]  = mapped_column(String(64)) # SHA-256 локального файла
   server_checksum: Mapped[str]  = mapped_column(String(64)) # SHA-256 серверного файла
   last_sync_at:    Mapped[datetime] = mapped_column(DateTime()) # Время последней синхронизации
