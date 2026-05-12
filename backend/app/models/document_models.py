@@ -15,8 +15,8 @@ class Document(Base):
   title:              Mapped[str]         = mapped_column(String(255), index=True) # ! CHECK: длина
   description:        Mapped[str | None]  = mapped_column(Text) # Описание
   publish_date:       Mapped[datetime]    = mapped_column(DateTime(timezone=True), server_default=func.now()) # Дата публикации # Как указать именно **timezone** datetime
-  uploader_id:        Mapped[int]         = mapped_column(ForeignKey('users.id', ondelete='CASCADE')) # Автор загрузки
-  moderator_id:       Mapped[int | None]  = mapped_column(ForeignKey('users.id', ondelete='SET NULL')) # Кто одобрил/отклонил последнюю версию
+  uploader_id:        Mapped[int]         = mapped_column(ForeignKey('users.id', ondelete='CASCADE'), index=True) # Автор загрузки
+  moderator_id:       Mapped[int | None]  = mapped_column(ForeignKey('users.id', ondelete='SET NULL'), index=True) # Кто одобрил/отклонил последнюю версию
   minio_bucket:       Mapped[str]         = mapped_column(String(100)) # Имя бакета. CHECK: длина имени бакета
   minio_object_path:  Mapped[str]         = mapped_column(String(500))# Путь к объекту в MinIO
   file_original_name: Mapped[str | None]  = mapped_column(String(255))# Исходное имя
@@ -47,8 +47,8 @@ class UploadRequest(Base):
   id:                   Mapped[int]        = mapped_column(primary_key=True, autoincrement=True, index=True)
   title:                Mapped[str]        = mapped_column(String(255)) # ! CHECK: длина
   description:          Mapped[str | None] = mapped_column(Text) # Описание
-  uploader_id:          Mapped[int]        = mapped_column(ForeignKey('users.id', ondelete='CASCADE')) # Автор загрузки
-  moderator_id:         Mapped[int | None] = mapped_column(ForeignKey('users.id', ondelete='SET NULL')) # Проверяющий
+  uploader_id:          Mapped[int]        = mapped_column(ForeignKey('users.id', ondelete='CASCADE'), index=True) # Автор загрузки
+  moderator_id:         Mapped[int | None] = mapped_column(ForeignKey('users.id', ondelete='SET NULL'), index=True) # Проверяющий
   temporary_minio_path: Mapped[str]        = mapped_column(String(500)) # Всегда в бакете `temporary`
   file_original_name:   Mapped[str | None] = mapped_column(String(255)) # Исходное имя
   file_mime:            Mapped[str]        = mapped_column(String(100)) # MIME-тип

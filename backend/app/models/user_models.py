@@ -33,7 +33,7 @@ class User(Base):
   registration_date:   Mapped[datetime]   = mapped_column(DateTime(timezone=True), server_default=func.now())
   created_at:          Mapped[datetime]   = mapped_column(DateTime(timezone=True), server_default=func.now())
   updated_at:          Mapped[datetime]   = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
-  role_id:             Mapped[int | None] = mapped_column(ForeignKey('roles.id', ondelete='SET NULL'))
+  role_id:             Mapped[int | None] = mapped_column(ForeignKey('roles.id', ondelete='SET NULL'), index=True)
 
   role                 = relationship("Role",            back_populates="users")
   uploads_created      = relationship("UploadRequest",   foreign_keys="UploadRequest.uploader_id", back_populates="user")
