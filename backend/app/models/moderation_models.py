@@ -1,7 +1,7 @@
 from sqlalchemy import String, Text, DateTime, ForeignKey, Enum, func
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 from datetime import datetime
-from app.config.database import Base, ReportEnum, ReportCategoryEnum
+from app.config.database import Base, ReportEnum, ReportTargetEnum, ReportCategoryEnum
 
 
 class Report(Base):
@@ -9,9 +9,9 @@ class Report(Base):
   
   id:              Mapped[int]        = mapped_column(primary_key=True, autoincrement=True, index=True)
   reporter_id:     Mapped[int]        = mapped_column(ForeignKey('users.id', ondelete='CASCADE'), index=True) # Автор жалобы
-  target_type:     Mapped[ReportCategoryEnum] = mapped_column(Enum(ReportCategoryEnum, name='report_category', native_enum=True)) # ReportCategoryEnum(document / user / group)
+  target_type:     Mapped[ReportTargetEnum]   = mapped_column(Enum(ReportTargetEnum, name='report_target_enum', native_enum=True)) # ReportTargetEnum(document / user / group)
   target_id:       Mapped[int]        # Динамический FK (логика приложения)
-  reason_category: Mapped[str]        = mapped_column(String(50)) # copyright / inappropriate / virus / other (ввести свою прчиину). Не ENUM
+  reason_category: Mapped[ReportCategoryEnum] = mapped_column(Enum(ReportCategoryEnum, name='report_category_enum', native_enum=True)) # copyright / inappropriate / virus / other (ввести свою прчиину). Не ENUM
   description:     Mapped[str | None] = mapped_column(Text) # Текст жалобы
   report_status:   Mapped[ReportEnum] = mapped_column(Enum(ReportEnum, name='report_enum', native_enum=True), default=ReportEnum.PENDING) # ReportEnum(pending / in_review / resolved / rejected)
   created_at:      Mapped[datetime]   = mapped_column(DateTime(timezone=True), server_default=func.now())

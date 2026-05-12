@@ -11,7 +11,7 @@ class ConversionJob(Base):
   id:                Mapped[int]        = mapped_column(primary_key=True, autoincrement=True, index=True)
   source_entity_id:  Mapped[int | None] = mapped_column(ForeignKey('upload_requests.id', ondelete='CASCADE'), index=True) # Только для новых загрузок
   document_id:       Mapped[int | None] = mapped_column(ForeignKey('documents.id', ondelete='CASCADE'), index=True) # Только для повторной конвертации/версий
-  status:            Mapped[ConversionEnum] = mapped_column(Enum(ConversionEnum, native_enum=True), default=ConversionEnum.PENDING) # ConversionEnum(pending / processing / completed / failed / retrying)
+  status:            Mapped[ConversionEnum] = mapped_column(Enum(ConversionEnum, name='conversion_enum', native_enum=True), default=ConversionEnum.PENDING) # ConversionEnum(pending / processing / completed / failed / retrying)
   original_format:   Mapped[str]        = mapped_column(String(20)) # docx / pptx / txt и т.д.
   target_format:     Mapped[str]        = mapped_column(String(20), default='pdf')
   retry_count:       Mapped[int]        = mapped_column(default=0)
