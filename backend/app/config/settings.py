@@ -62,7 +62,7 @@ class Settings(BaseSettings):
     user = quote_plus(self.POSTGRES_USER)
     password = quote_plus(self.POSTGRES_PASSWORD)
     return (
-      f'postgresql://{user}:{password}@'
+      f'postgresql+psycopg2://{user}:{password}@'
       f'{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/{self.DATABASE_NAME}'
     )
   
