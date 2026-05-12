@@ -1,4 +1,4 @@
-from sqlalchemy import String, mapped_column, ForeignKey, DateTime, func
+from sqlalchemy import String, ForeignKey, DateTime, func
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 from datetime import datetime
 from app.config.database import Base
@@ -27,5 +27,5 @@ class FavoriteItem(Base):
   document_id: Mapped[int] = mapped_column(ForeignKey('documents.id')) # Документ
   folder_id:   Mapped[int] = mapped_column(ForeignKey('favorite_folders.id')) # Папка
 
-  document = relationship("Document", back_populates="favorite_items")
+  document = relationship("Document",       back_populates="favorite_items")
   folder   = relationship("FavoriteFolder", back_populates="items")

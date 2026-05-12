@@ -37,7 +37,7 @@ class GroupMaterial(Base):
   sender_id:   Mapped[int] = mapped_column(ForeignKey('users.id'))
   
   group   = relationship("Group", back_populates="materials")
-  sender  = relationship("User", back_populates="group_materials_sent")
+  sender  = relationship("User",  back_populates="group_materials_sent")
   documents_attached = relationship("Document", secondary=group_material_documents, back_populates="group_materials")
 
 
@@ -49,5 +49,5 @@ class GroupInvitation(Base):
   invited_email:  Mapped[str] = mapped_column(String(255)) # Email приглашённого
   token:          Mapped[str] = mapped_column(String(64), unique=True) # Одноразовый токен
   expires_at:     Mapped[datetime] = mapped_column(DateTime(timezone=True))
-  invitation_status: Mapped[InvitationEnum] = mapped_column(Enum(InvitationEnum, native_enum=True), default=InvitationEnum.PENDING) # InvitationEnum(pending / accepted / expired / revoked)
+  invitation_status: Mapped[InvitationEnum] = mapped_column(Enum(InvitationEnum, name='invitation_enum', native_enum=True), default=InvitationEnum.PENDING) # InvitationEnum(pending / accepted / expired / revoked)
   created_by:     Mapped[int] = mapped_column(ForeignKey('users.id')) # Cоздатель
