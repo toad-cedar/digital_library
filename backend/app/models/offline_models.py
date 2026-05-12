@@ -11,11 +11,10 @@ class OfflineFolder(Base):
       'user_id',
       'parent_folder_id',
       'folder_name',
-      name='uq_favorite_folder_per_parent'
     ),
   )
   
-  id:               Mapped[int] = mapped_column(primary_key=True, autoincrement=True, index=True)
+  id:               Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
   user_id:          Mapped[int] = mapped_column(ForeignKey('users.id', ondelete='CASCADE'), index=True)
   folder_name:      Mapped[str] = mapped_column(String(100)) # ! CHECK: длина
   description:      Mapped[str | None] = mapped_column(String(500)) # ! CHECK: длина
@@ -31,7 +30,7 @@ class OfflineFolder(Base):
 class OfflineItem(Base):
   __tablename__ = 'offline_items'
   
-  id:          Mapped[int] = mapped_column(primary_key=True, autoincrement=True, index=True)
+  id:          Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
   document_id: Mapped[int] = mapped_column(ForeignKey('documents.id', ondelete='CASCADE'), index=True) # Документ
   folder_id:   Mapped[int] = mapped_column(ForeignKey('offline_folders.id', ondelete='CASCADE'), index=True) # Папка
   local_file_hash_checksum: Mapped[str] = mapped_column(String(64)) # Хеш локальной копии файла

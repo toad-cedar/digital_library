@@ -18,7 +18,7 @@ group_material_documents = Table(
 class Group(Base):
   __tablename__ = 'groups'
   
-  id:         Mapped[int] = mapped_column(primary_key=True, autoincrement=True, index=True)
+  id:         Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
   group_name: Mapped[str] = mapped_column(String(100), unique=True) # ! CHECK: длина Название
   creator_id: Mapped[int] = mapped_column(ForeignKey('users.id', ondelete='CASCADE'), index=True)
   created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
@@ -32,7 +32,7 @@ class Group(Base):
 class GroupMaterial(Base):
   __tablename__ = 'group_materials'
   
-  id:          Mapped[int] = mapped_column(primary_key=True, autoincrement=True, index=True)
+  id:          Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
   group_id:    Mapped[int] = mapped_column(ForeignKey('groups.id', ondelete='CASCADE'), index=True) # Группа
   sent_at:     Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
   sender_id:   Mapped[int | None] = mapped_column(ForeignKey('users.id',  ondelete='SET NULL'), index=True)
@@ -45,7 +45,7 @@ class GroupMaterial(Base):
 class GroupInvitation(Base):
   __tablename__ = 'group_invitations'
   
-  id:             Mapped[int] = mapped_column(primary_key=True, autoincrement=True, index=True)
+  id:             Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
   group_id:       Mapped[int] = mapped_column(ForeignKey('groups.id', ondelete='CASCADE'), index=True) # Группа
   invited_email:  Mapped[str] = mapped_column(String(255)) # Email приглашённого
   token:          Mapped[str] = mapped_column(String(64), unique=True) # Одноразовый токен

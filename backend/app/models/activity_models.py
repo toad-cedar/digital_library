@@ -8,7 +8,7 @@ from app.config.database import Base, DownloadTypeEnum
 class HistoryView(Base):
   __tablename__ = 'history_views'
   
-  id:          Mapped[int]  = mapped_column(primary_key=True, autoincrement=True, index=True) 
+  id:          Mapped[int]  = mapped_column(primary_key=True, autoincrement=True) 
   user_id:     Mapped[int]  = mapped_column(ForeignKey('users.id',    ondelete='CASCADE'), index=True) # Пользователь
   document_id: Mapped[int] = mapped_column(ForeignKey('documents.id', ondelete='CASCADE'), index=True) # Документ
   viewed_at:  Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now()) # Время просмотра
@@ -20,7 +20,7 @@ class HistoryView(Base):
 class HistoryDownload(Base):
   __tablename__ = 'history_downloads'
   
-  id:            Mapped[int]        = mapped_column(primary_key=True, autoincrement=True, index=True)
+  id:            Mapped[int]        = mapped_column(primary_key=True, autoincrement=True)
   user_id:       Mapped[int | None] = mapped_column(ForeignKey('users.id',     ondelete='SET NULL'), index=True) # NULL для гостей/анонимов
   document_id:   Mapped[int]        = mapped_column(ForeignKey('documents.id', ondelete='CASCADE'), index=True) # Документ
   downloaded_at: Mapped[datetime]   = mapped_column(DateTime(timezone=True), index=True) # Время скачивания

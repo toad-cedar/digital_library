@@ -7,7 +7,7 @@ from app.config.database import Base, ReportEnum, ReportTargetEnum, ReportCatego
 class Report(Base):
   __tablename__ = 'reports'
   
-  id:              Mapped[int]        = mapped_column(primary_key=True, autoincrement=True, index=True)
+  id:              Mapped[int]        = mapped_column(primary_key=True, autoincrement=True)
   reporter_id:     Mapped[int]        = mapped_column(ForeignKey('users.id', ondelete='CASCADE'), index=True) # Автор жалобы
   target_type:     Mapped[ReportTargetEnum]   = mapped_column(Enum(ReportTargetEnum, name='report_target_enum', native_enum=True)) # ReportTargetEnum(document / user / group)
   target_id:       Mapped[int]        # Динамический FK (логика приложения)
@@ -25,7 +25,7 @@ class Report(Base):
 class ModerationAssignment(Base):
   __tablename__ = 'moderation_assignments'
   
-  id:                 Mapped[int] = mapped_column(primary_key=True, autoincrement=True, index=True)
+  id:                 Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
   upload_requests_id: Mapped[int] = mapped_column(ForeignKey('upload_requests.id', ondelete='CASCADE'), index=True) # Заявка
   moderator_id:       Mapped[int | None] = mapped_column(ForeignKey('users.id', ondelete='SET NULL'), index=True) # Модератор
   deadline:           Mapped[datetime] = mapped_column(DateTime()) # SLA на проверку

@@ -19,7 +19,7 @@ class User(Base):
       name='ck_users_failed_login_attempts_positive'
     ),
   )
-  id:                  Mapped[int]        = mapped_column(primary_key=True, autoincrement=True, index=True)
+  id:                  Mapped[int]        = mapped_column(primary_key=True, autoincrement=True)
   username:            Mapped[str]        = mapped_column(String(50), unique=True) # ! CHECK: длина, формат
   email:               Mapped[str]        = mapped_column(String(255), unique=True) # ! CHECK: формат 
   password_hash:       Mapped[str]        = mapped_column(String(255)) # ! CHECK: длина
@@ -60,7 +60,7 @@ class User(Base):
 class Role(Base):
   __tablename__ = 'roles'
   
-  id:        Mapped[int] = mapped_column(primary_key=True, autoincrement=True, index=True)
+  id:        Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
   role_name: Mapped[str] = mapped_column(String(30), unique=True) # user / teacher / moderator / admin
   
   users       = relationship("User", back_populates="role")
@@ -70,7 +70,7 @@ class Role(Base):
 class Permission(Base):
   __tablename__ = 'permissions'
   
-  id:              Mapped[int] = mapped_column(primary_key=True, autoincrement=True, index=True)
+  id:              Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
   permission_name: Mapped[str] = mapped_column(String(100), unique=True)
   
   roles = relationship("Role", secondary=roles_permissions, back_populates="permissions")

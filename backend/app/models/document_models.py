@@ -11,7 +11,7 @@ from app.models.group_models import group_material_documents
 class Document(Base):
   __tablename__ = 'documents'
   
-  id:                 Mapped[int]         = mapped_column(primary_key=True, autoincrement=True, index=True)
+  id:                 Mapped[int]         = mapped_column(primary_key=True, autoincrement=True)
   title:              Mapped[str]         = mapped_column(String(255), index=True) # ! CHECK: длина
   description:        Mapped[str | None]  = mapped_column(Text) # Описание
   publish_date:       Mapped[datetime]    = mapped_column(DateTime(timezone=True), server_default=func.now()) # Дата публикации # Как указать именно **timezone** datetime

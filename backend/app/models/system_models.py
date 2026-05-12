@@ -9,7 +9,7 @@ from datetime import datetime
 class AuditLog(Base):
   __tablename__ = 'audit_logs'
   
-  id:          Mapped[int]  = mapped_column(primary_key=True, autoincrement=True, index=True)
+  id:          Mapped[int]  = mapped_column(primary_key=True, autoincrement=True)
   user_id:     Mapped[int | None]  = mapped_column(ForeignKey('users.id', ondelete='SET NULL'), index=True)
   action:      Mapped[str]  = mapped_column(String(50)) # upload / delete / approve / reject
   target_uuid: Mapped[UUID] = mapped_column(UUID(as_uuid=True)) # ID целевого объекта
@@ -44,7 +44,7 @@ class Notification(Base):
 class RegistryDevice(Base):
   __tablename__ = 'registry_devices'
 
-  id:          Mapped[int]  = mapped_column(primary_key=True, autoincrement=True, index=True)
+  id:          Mapped[int]  = mapped_column(primary_key=True, autoincrement=True)
   user_id:     Mapped[int]  = mapped_column(ForeignKey('users.id', ondelete='CASCADE'), index=True) # Владелец
   device_uuid: Mapped[UUID] = mapped_column(UUID(as_uuid=True), unique=True) # Генерация при первом запуске клиента
   device_name: Mapped[str]  = mapped_column(String(100)) # Имя устройства/пользователя
@@ -60,7 +60,7 @@ class RegistryDevice(Base):
 class SyncState(Base):
   __tablename__ = 'sync_states'
   
-  id:              Mapped[int]  = mapped_column(primary_key=True, autoincrement=True, index=True)
+  id:              Mapped[int]  = mapped_column(primary_key=True, autoincrement=True)
   user_id:         Mapped[int]  = mapped_column(ForeignKey('users.id', ondelete='CASCADE'), index=True) # Владелец
   device_id:       Mapped[int]  = mapped_column(ForeignKey('registry_devices.id', ondelete='CASCADE'), index=True) # Устройство
   entity_type:     Mapped[str]  = mapped_column(String(20)) # document / folder / tag

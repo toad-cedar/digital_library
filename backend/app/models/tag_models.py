@@ -11,7 +11,7 @@ documents_search_tags = Table(
 class SearchTag(Base):
   __tablename__ = 'search_tags'
   
-  id:       Mapped[int] = mapped_column(primary_key=True, autoincrement=True, index=True)
+  id:       Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
   tag_name: Mapped[str] = mapped_column(String(50), unique=True, index=True) # ! CHECK: длина, Наименование тега
 
   documents = relationship("Document", secondary=documents_search_tags, back_populates="tags")
