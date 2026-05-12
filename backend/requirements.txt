@@ -16,6 +16,7 @@ python-jose[cryptography]
 python-dotenv==1.2.1
 python-magic==0.4.27
 python-multipart==0.0.20
+psycopg2=2.9.12
 rq=2.8.0
 sqlalchemy==2.0.45
 uvicorn==0.38.0
