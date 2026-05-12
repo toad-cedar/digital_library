@@ -40,7 +40,7 @@ class HistoryVersion(Base):
   file_hash:      Mapped[str] = mapped_column(String(64), unique=True)
   file_size:      Mapped[int] = mapped_column(BigInteger)# Размер
   file_format:    Mapped[str] = mapped_column(String(20)) # Формат
-  uploaded_by:    Mapped[int] = mapped_column(ForeignKey('users.id', ondelete='SET NULL'), index=True) # Автор версии
+  uploaded_by:    Mapped[int | None] = mapped_column(ForeignKey('users.id', ondelete='SET NULL'), index=True) # Автор версии
   change_notes:   Mapped[str | None] = mapped_column(Text)
   created_at:     Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
   

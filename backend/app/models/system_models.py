@@ -11,7 +11,7 @@ class AuditLog(Base):
   __tablename__ = 'audit_logs'
   
   id:          Mapped[int]  = mapped_column(primary_key=True, autoincrement=True, index=True)
-  user_id:     Mapped[int]  = mapped_column(ForeignKey('users.id', ondelete='SET NULL'), index=True)
+  user_id:     Mapped[int | None]  = mapped_column(ForeignKey('users.id', ondelete='SET NULL'), index=True)
   action:      Mapped[str]  = mapped_column(String(50)) # upload / delete / approve / reject
   target_uuid: Mapped[UUID] = mapped_column(Uuid(as_uuid=True)) # ID целевого объекта
   target_type: Mapped[AuditTargetEnum] = mapped_column(Enum(AuditTargetEnum, name='audit_enum', native_enum=True)) # AuditTargetEnum(document / user / group)

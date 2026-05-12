@@ -27,7 +27,7 @@ class ModerationAssignment(Base):
   
   id:                 Mapped[int] = mapped_column(primary_key=True, autoincrement=True, index=True)
   upload_requests_id: Mapped[int] = mapped_column(ForeignKey('upload_requests.id', ondelete='CASCADE'), index=True) # Заявка
-  moderator_id:       Mapped[int] = mapped_column(ForeignKey('users.id', ondelete='SET NULL'), index=True) # Модератор
+  moderator_id:       Mapped[int | None] = mapped_column(ForeignKey('users.id', ondelete='SET NULL'), index=True) # Модератор
   deadline:           Mapped[datetime] = mapped_column(DateTime()) # SLA на проверку
   priority_score:     Mapped[int] # Приоритет на основе автора/типа
   assigned_at:        Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())

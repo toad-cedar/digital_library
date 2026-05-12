@@ -35,7 +35,7 @@ class GroupMaterial(Base):
   id:          Mapped[int] = mapped_column(primary_key=True, autoincrement=True, index=True)
   group_id:    Mapped[int] = mapped_column(ForeignKey('groups.id', ondelete='CASCADE'), index=True) # Группа
   sent_at:     Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
-  sender_id:   Mapped[int] = mapped_column(ForeignKey('users.id',  ondelete='SET NULL'), index=True)
+  sender_id:   Mapped[int | None] = mapped_column(ForeignKey('users.id',  ondelete='SET NULL'), index=True)
   
   group   = relationship("Group", back_populates="materials")
   sender  = relationship("User",  back_populates="group_materials_sent")
@@ -51,7 +51,7 @@ class GroupInvitation(Base):
   token:          Mapped[str] = mapped_column(String(64), unique=True) # Одноразовый токен
   expires_at:     Mapped[datetime] = mapped_column(DateTime(timezone=True))
   invitation_status: Mapped[InvitationEnum] = mapped_column(Enum(InvitationEnum, name='invitation_enum', native_enum=True), default=InvitationEnum.PENDING) # InvitationEnum(pending / accepted / expired / revoked)
-  created_by:     Mapped[int] = mapped_column(ForeignKey('users.id', ondelete='SET NULL'), index=True) # Cоздатель
+  created_by:     Mapped[int | None] = mapped_column(ForeignKey('users.id', ondelete='SET NULL'), index=True) # Cоздатель
   
   group   = relationship("Group", back_populates="invitations")
   creator = relationship("User", foreign_keys=[created_by], back_populates="invitations_created") 
