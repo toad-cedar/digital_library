@@ -11,6 +11,7 @@ class OfflineFolder(Base):
       'user_id',
       'parent_folder_id',
       'folder_name',
+      name='uq_offline_folder_per_parent'
     ),
   )
   
