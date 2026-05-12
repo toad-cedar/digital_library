@@ -7,12 +7,12 @@ from app.config.database import Base
 class FavoriteFolder(Base):
   __tablename__ = 'favorite_folders'
   
-  id:          Mapped[int] = mapped_column(primary_key=True, autoincrement=True, index=True)
-  user_id:     Mapped[int] = mapped_column(ForeignKey('users.id')) # Владелец
-  folder_name: Mapped[str] = mapped_column(String(100)) # ! CHECK: длина Имя папки
-  description: Mapped[str | None] = mapped_column(String(500)) # CHECK: длина
+  id:          Mapped[int]        = mapped_column(primary_key=True, autoincrement=True, index=True)
+  user_id:     Mapped[int]        = mapped_column(ForeignKey('users.id')) # Владелец
+  folder_name: Mapped[str]        = mapped_column(String(100)) # ! CHECK: длина Имя папки
+  description: Mapped[str | None] = mapped_column(String(500)) # ! CHECK: длина
   parent_folder_id: Mapped[int | None] = mapped_column(ForeignKey('favorite_folders.id')) # Рекурсивная ссылка
-  created_at:  Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+  created_at:  Mapped[datetime]  = mapped_column(DateTime(timezone=True), server_default=func.now())
 
   user          = relationship("User", back_populates="favorite_folders")
   parent_folder = relationship("FavoriteFolder", remote_side=[id], back_populates="child_folders")

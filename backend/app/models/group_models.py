@@ -26,6 +26,7 @@ class Group(Base):
   creator   = relationship("User", back_populates="groups_created")
   members   = relationship("User", secondary=groups_users, back_populates="groups_joined")
   materials = relationship("GroupMaterial", back_populates="group")
+  invitations  = relationship("GroupInvitation", back_populates="group")
 
 
 class GroupMaterial(Base):
@@ -51,3 +52,6 @@ class GroupInvitation(Base):
   expires_at:     Mapped[datetime] = mapped_column(DateTime(timezone=True))
   invitation_status: Mapped[InvitationEnum] = mapped_column(Enum(InvitationEnum, name='invitation_enum', native_enum=True), default=InvitationEnum.PENDING) # InvitationEnum(pending / accepted / expired / revoked)
   created_by:     Mapped[int] = mapped_column(ForeignKey('users.id')) # Cоздатель
+  
+  group   = relationship("Group", back_populates="invitations")
+  creator = relationship("User", foreign_keys=[created_by], back_populates="invitations_created") 
