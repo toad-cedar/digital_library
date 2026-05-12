@@ -19,9 +19,11 @@ class OfflineFolder(Base):
   user_id:          Mapped[int] = mapped_column(ForeignKey('users.id'))
   folder_name:      Mapped[str] = mapped_column(String(100)) # ! CHECK: длина
   description:      Mapped[str | None] = mapped_column(String(500)) # ! CHECK: длина
+  parent_folder_id: Mapped[int | None] = mapped_column(ForeignKey('offline_folders.id'), nullable=True) # Рекурсивная связь
   created_at:       Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
   
   user          = relationship("User", back_populates="offline_folders")
+  parent_folder = relationship("OfflineFolder", remote_side="OfflineFolder.id", back_populates="child_folders")
   items         = relationship("OfflineItem", back_populates="folder")
   child_folders = relationship("OfflineFolder", back_populates="parent_folder")
 
