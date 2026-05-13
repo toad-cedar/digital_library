@@ -2,10 +2,29 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.ext.asyncio import AsyncSession
 from jose import jwt, JWTError
+
+from app.integrations.minio_client import get_minio_client
+from app.integrations.elastic_client import get_elastic_client
+from app.integrations.ocr_adapter import get_ocr_client
+from app.integrations.antivirus_adapter import get_antivirus_client
+from app.integrations.conversion_adapter import get_conversion_client
+from app.integrations.email_adapter import get_email_client
+from app.integrations.redis_client import get_redis_client
+
 from app.config.database import get_db_session
 from app.config.settings import get_settings
-from app.models.orm_models import User
+from app.models import User
 from app.repos.user_repo import UserRepository
+
+
+def get_minio(): return get_minio_client()
+def get_elastic(): return get_elastic_client()
+def get_redis(): return get_redis_client()
+def get_ocr(): return get_ocr_client()
+def get_antivirus(): return get_antivirus_client()
+def get_conversion(): return get_conversion_client()
+def get_email(): return get_email_client()
+
 
 security = HTTPBearer()
 
@@ -41,6 +60,10 @@ async def get_current_user(
     )
 
   return user
+
+
+
+
 
 # Зависимости для проверки ролей (пример)
 # async def get_current_active_user(current_user: User = Depends(get_current_user)):

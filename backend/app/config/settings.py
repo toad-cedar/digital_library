@@ -12,7 +12,7 @@ class Settings(BaseSettings):
   POSTGRES_PORT: int = Field(default=5432, alias='DB_PORT')
   DATABASE_NAME: str = Field(default='library_db', alias='DB_NAME')
   
-  SECRET_KEY: str = Field(..., alias='SECRET_KEY')  
+  SECRET_KEY: str = Field(..., alias='SECRET_KEY')
   
   MINIO_USER: str = Field(..., alias='MINIO_ROOT_USER')
   MINIO_PASSWORD: str = Field(..., alias='MINIO_ROOT_PASSWORD')
@@ -20,15 +20,31 @@ class Settings(BaseSettings):
   MINIO_ACCESS_KEY: str = Field(..., alias='MINIO_ACCESS_KEY')
   MINIO_SECRET_KEY: str = Field(..., alias='MINIO_SECRET_KEY')
   MINIO_BUCKET: str = Field(default='documents', alias='MINIO_BUCKET')
+  MINIO_REGION: str = Field(default='us', alias='MINIO_REGION')
+  MINIO_SECURE: bool = Field(default=True, alias='MINIO_SECURE')
+  VERIFY_TLS: bool = Field(default=True, alias='VERIFY_TLS')
 
   REDIS_USER: str = Field(..., alias='REDIS_USER')
   REDIS_PASSWORD: str = Field(..., alias='REDIS_PASSWORD')
   REDIS_HOST: str = Field(default='localhost', alias='REDIS_HOST')
   REDIS_PORT: int = Field(default=6379, alias='REDIS_PORT')
+  REDIS_DB: str = Field(default='redis_db', alias='REDIS_DB')
   
+  ELASTICSEARCH_USER: str = Field(..., alias='ELASTIC_USER')
   ELASTICSEARCH_PASSWORD: str = Field(..., alias='ELASTIC_PASSWORD')
-  ELASTICSEARCH_HOST: str = Field(default='localhost', alias='ELASTICSEARCH_HOST')
-  ELASTICSEARCH_PORT: int = Field(default=9200, alias='ELASTICSEARCH_PORT')
+  ELASTICSEARCH_HOST: str = Field(default='localhost', alias='ELASTIC_HOST')
+  ELASTICSEARCH_PORT: int = Field(default=9200, alias='ELASTIC_PORT')
+  ELASTICSEARCH_SECURE: bool = Field(default=True, alias='ELASTIC_SECURE')
+  
+  SMTP_USER: str = Field(..., alias='SMTP_USER')
+  SMTP_PASSWORD: str = Field(..., alias='SMTP_PASSWORD')
+  SMTP_HOST: str = Field(..., alias='SMTP_HOST')
+  SMTP_PORT: int = Field(default=587, alias='SMTP_PORT')
+  SMTP_USE_TLS: bool = Field(default=True, alias='SMTP_USE_TLS')
+  
+  OCR_SERVICE_URL: str = Field(..., alias='OCR_SERVICE_URL')
+  ANTIVIRUS_SERVICE_URL: str = Field(..., alias='ANTIVIRUS_SERVICE_URL')
+  CONVERSION_SERVICE_URL: str = Field(..., alias='CONVERSION_SERVICE_URL')
   
   ALLOWED_ORIGINS: list[str] = Field(
     default=["http://localhost:5173"],

@@ -5,6 +5,7 @@ vendor/
 *.pyc
 
 # Directories & files
+venv/
 dist/
 dist-ssr/
 build/
