@@ -1,7 +1,8 @@
 alembic==1.17.2
-alembic[asyncio]
 asyncpg==0.31.0
 bcrypt==4.0.1
+casbin==1.43.0
+casbin_sqlalchemy_adapter==1.4.0
 passlib[bcrypt] 
 boto3==1.42.2
 elasticsearch==9.2.0
