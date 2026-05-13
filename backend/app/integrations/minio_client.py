@@ -1,9 +1,9 @@
-import time
 import boto3
 from botocore.config import Config
-from botocore.exceptions import ClientError, BotoCoreError
+from botocore.exceptions import ClientError, ConnectionError, ConnectTimeoutError, ReadTimeoutError
 from app.config.settings import get_settings
-from app.core.exceptions import IntegrationConnectionError, IntegrationTimeoutError, IntegrationServiceError
+from app.integrations.base_adapter import integration_safe_call
+
 
 def get_minio_client() -> boto3.client:
   settings = get_settings()
@@ -25,20 +25,10 @@ def get_minio_client() -> boto3.client:
   )
 
 def minio_safe_call(func, *args, max_retries: int = 3, **kwargs):
-  last_error = None
-  
-  for attempt in range(max_retries):
-    try:
-      return func(*args, **kwargs)
-    except (ConnectionError, BotoCoreError) as e:
-      last_error = e
-      if attempt == max_retries - 1:
-        if "timeout" in str(e).lower():
-          raise IntegrationTimeoutError(f"MinIO timeout: {e}") from e
-        raise IntegrationConnectionError(f"MinIO connection failed: {e}") from e
-      time.sleep(2 ** attempt)
-    except ClientError as e:
-      raise IntegrationServiceError(
-        f"MinIO API error {e.response['Error']['Code']}: {e.response['Error']['Message']}"
-      ) from e
-  raise IntegrationConnectionError("MinIO call failed after retries") from last_error
+  return integration_safe_call(
+    func, *args, max_retries=max_retries,
+    timeout_exc=(ConnectTimeoutError, ReadTimeoutError),
+    connection_exc=(ConnectionError,),
+    service_exc=(ClientError,),
+    **kwargs
+  )
