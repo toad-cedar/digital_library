@@ -44,17 +44,7 @@ app.include_router(auth.router,      prefix="/api", tags=["Authentication"])
 # app.include_router(offline.router, prefix="/api",  tags=["Offline Library"])
 # app.include_router(groups.router,  prefix="/api",  tags=["Groups"])
 
+
 @app.get("/")
 def read_root():
   return { "message": "API is working" }
-
-# TODO: Дополнительно: обработчики ошибок, логирование, health-check эндпоинт и т.д.
-# @app.on_event("startup")
-# async def startup_event():
-#     # Логика при запуске приложения (например, проверка подключения к БД)
-#     pass
-#
-# @app.on_event("shutdown")
-# async def shutdown_event():
-#     # Логика при выключении приложения
-#     pass
