@@ -3,8 +3,8 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.ext.asyncio import AsyncSession
 from jose import jwt, JWTError
 
-from app.integrations.minio_client import get_minio_client
-from app.integrations.elastic_client import get_elastic_client
+from app.integrations.minio_client import async_minio_safe_call
+from app.integrations.elastic_client import async_elastic_safe_call
 from app.integrations.ocr_adapter import get_ocr_client
 from app.integrations.antivirus_adapter import get_antivirus_client
 from app.integrations.conversion_adapter import get_conversion_client
@@ -17,8 +17,8 @@ from app.models import User
 from app.repos.user_repo import UserRepository
 
 
-def get_minio(): return get_minio_client()
-def get_elastic(): return get_elastic_client()
+async def get_minio(): return async_minio_safe_call()
+async def get_elastic(): return async_elastic_safe_call()
 def get_redis(): return get_redis_client()
 def get_ocr(): return get_ocr_client()
 def get_antivirus(): return get_antivirus_client()
