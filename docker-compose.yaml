@@ -18,6 +18,25 @@ networks:
     internal: true   
 
 services:
+  worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    command: python -m app.worker
+    env_file: ./.env
+    environment:
+      - REDIS_HOST=redis
+      - DB_HOST=postgres
+    depends_on:
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    networks:
+      - app-network
+    restart: unless-stopped
+
+
   postgres:
     image: postgres:18.3-alpine3.23
     container_name: postgres
@@ -123,8 +142,7 @@ services:
       interval: 20s
       timeout: 10s
       retries: 5
-    
-  
+
   # Запускается только один раз
   minio-init:
     image: minio/mc
@@ -134,14 +152,14 @@ services:
     restart: on-failure
     entrypoint: >
       /bin/sh -c "  
-      /usr/bin/mc alias set myminio ${MINIO_ENDPOINT} ${MINIO_ROOT_USER} ${MINIO_ROOT_PASSWORD};
+      /usr/bin/mc alias set myminio ${http://minio:9000} ${MINIO_ROOT_USER} ${MINIO_ROOT_PASSWORD};
       /usr/bin/mc mb myminio/uploads || true;
       /usr/bin/mc mb myminio/covers || true;
       /usr/bin/mc anonymous set public myminio/uploads || true;
       /usr/bin/mc anonymous set public myminio/covers || true;
       exit 0;
       "
-  
+
   # Антивирус
   clamav:
     image: clamav/clamav:stable
