@@ -63,7 +63,43 @@ class UploadService:
     
     return UploadRequestRead.model_validate(req)
 
-  async def _dispatch_processing_task(self, upload_id: int):
-    # ! Здесь подключение к очереди (Celery/RQ/ARQ)
-    # await redis_client.lpush("processing_queue", json.dumps({"upload_id": upload_id}))
-    logger.info(f"Processing task dispatched for upload_id={upload_id}")
+  @staticmethod
+  def _dispatch_processing_task(upload_id: int) -> None:
+    from rq import Retry
+    from app.config.worker_config import default_queue, heavy_queue
+    from app.tasks.file_pipeline import validate_file_task, extract_text_task, finalize_upload_task
+
+    retry_policy = Retry(max=3, interval=[15, 60, 180])
+
+    try:
+      validate_job = default_queue.enqueue(
+        validate_file_task,
+        upload_id,
+        retry=retry_policy,
+        job_timeout='5m',
+        meta={'upload_id': upload_id}
+      )
+
+      extract_job = heavy_queue.enqueue(
+        extract_text_task,
+        upload_id,
+        depends_on=validate_job,
+        retry=retry_policy,
+        job_timeout='15m'
+      )
+
+      finalize_job = default_queue.enqueue(
+        finalize_upload_task,
+        upload_id,
+        depends_on=extract_job,
+        retry=retry_policy,
+        job_timeout='5m'
+      )
+
+      logger.info(
+        f"Pipeline dispatched: validate={validate_job.id}, "
+        f"extract={extract_job.id}, finalize={finalize_job.id}"
+      )
+    except Exception as e:
+      logger.error(f"Failed to enqueue pipeline: {e}")
+      raise
