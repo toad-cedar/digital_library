@@ -21,6 +21,28 @@ class TagRepository:
       self.db.add(tag)
       await self.db.flush()
     return tag
+  
+  async def get_or_create_by_names(self, tag_names: List[str]) -> List[SearchTag]:
+    """Получает или создаёт список тегов за один запрос"""
+    if not tag_names:
+      return []
+            
+    existing_stmt = select(SearchTag).where(SearchTag.tag_name.in_(tag_names))
+    existing = (await self.db.execute(existing_stmt)).scalars().all()
+    existing_map = {tag.tag_name: tag for tag in existing}
+
+    new_tags = []
+    for name in tag_names:
+      if name not in existing_map:
+        tag = SearchTag(tag_name=name)
+        self.db.add(tag)
+        new_tags.append(tag)
+        existing_map[name] = tag
+
+    if new_tags:
+      await self.db.flush()
+
+    return list(existing_map.values())
 
   async def get_by_document(self, document_id: int) -> List[SearchTag]:
     stmt = select(SearchTag).join(documents_search_tags).where(documents_search_tags.c.document_id == document_id)

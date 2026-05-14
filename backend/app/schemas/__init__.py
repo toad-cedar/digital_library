@@ -36,7 +36,7 @@ from .offline import (
     ConflictResolutionItem, SyncStateResponse
 )
 from .activity import (
-    ViewHistoryRead, DownloadHistoryRead, UserStatisticsResponse
+    HistoryViewRead, HistoryDownloadRead, UserStatisticsResponse
 )
 from .moderation import (
     ModerationQueueItem, ModerationQueueResponse, ModerationDecision,
@@ -63,7 +63,7 @@ __all__ = [
     "OfflineFolderCreate", "OfflineFolderRead", "OfflineFolderUpdate",
     "OfflineItemAdd", "LocalStateItem", "SyncConfigRequest",
     "ConflictResolutionItem", "SyncStateResponse",
-    "ViewHistoryRead", "DownloadHistoryRead", "UserStatisticsResponse",
+    "HistoryViewRead", "HistoryDownloadRead", "UserStatisticsResponse",
     "ModerationQueueItem", "ModerationQueueResponse", "ModerationDecision",
     "ReportCreate", "ReportRead", "AssignmentRead",
     "NotificationRead", "NotificationMarkRead", "AuditLogRead",
