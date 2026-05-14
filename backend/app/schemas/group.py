@@ -18,6 +18,10 @@ class GroupUpdate(BaseModel):
 class MemberAddRequest(BaseModel):
   user_id: int
 
+class InviteResponse(BaseModel):
+  token: str
+  message: str
+
 class InviteRequest(BaseModel):
   invited_email: EmailStr
 

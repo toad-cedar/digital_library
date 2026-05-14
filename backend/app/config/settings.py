@@ -29,9 +29,7 @@ class Settings(BaseSettings):
   REDIS_HOST: str = Field(default='localhost', alias='REDIS_HOST')
   REDIS_PORT: int = Field(default=6379, alias='REDIS_PORT')
   REDIS_DB: str = Field(default='redis_db', alias='REDIS_DB')
-  REDIS_DB: str = Field(default='redis_db', alias='REDIS_DB')
   
-  ELASTICSEARCH_USER: str = Field(..., alias='ELASTIC_USER')
   ELASTICSEARCH_USER: str = Field(..., alias='ELASTIC_USER')
   ELASTICSEARCH_PASSWORD: str = Field(..., alias='ELASTIC_PASSWORD')
   ELASTICSEARCH_HOST: str = Field(default='localhost', alias='ELASTIC_HOST')

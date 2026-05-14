@@ -1,8 +1,9 @@
 from typing import List, Optional, Tuple
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func, insert, delete
+from sqlalchemy import select, func, insert, delete, update
 from app.models.group_models import Group, GroupMaterial, GroupInvitation, groups_users
 from app.repos.base_repo import GenericRepository
+from app.config.database import InvitationEnum
 
 
 class GroupRepository:
@@ -39,3 +40,8 @@ class GroupRepository:
   async def get_invitation_by_token(self, token: str) -> Optional[GroupInvitation]:
     stmt = select(GroupInvitation).where(GroupInvitation.token == token)
     return (await self.db.execute(stmt)).scalar_one_or_none()
+  
+  async def update_invitation_status(self, invitation_id: int, status: InvitationEnum) -> Optional[GroupInvitation]:
+    stmt = update(GroupInvitation).where(GroupInvitation.id == invitation_id).values(invitation_status=status).returning(GroupInvitation)
+    result = await self.db.execute(stmt)
+    return result.scalar_one_or_none()

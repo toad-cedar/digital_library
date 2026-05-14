@@ -2,7 +2,7 @@ from pydantic import BaseModel, ConfigDict
 from datetime import datetime
 
 
-class ViewHistoryRead(BaseModel):
+class HistoryViewRead(BaseModel):
   id: int
   user_id: int
   document_id: int
@@ -10,7 +10,7 @@ class ViewHistoryRead(BaseModel):
   model_config = ConfigDict(from_attributes=True)
 
 
-class DownloadHistoryRead(BaseModel):
+class HistoryDownloadRead(BaseModel):
   id: int
   user_id: int | None
   document_id: int
