@@ -44,7 +44,7 @@ class Document(Base):
 class UploadRequest(Base):
   __tablename__ = 'upload_requests'
   
-  id:                   Mapped[int]        = mapped_column(primary_key=True, autoincrement=True, index=True)
+  id:                   Mapped[int]        = mapped_column(primary_key=True, autoincrement=True)
   title:                Mapped[str]        = mapped_column(String(255)) # ! CHECK: длина
   description:          Mapped[str | None] = mapped_column(Text) # Описание
   uploader_id:          Mapped[int]        = mapped_column(ForeignKey('users.id', ondelete='CASCADE'), index=True) # Автор загрузки
