@@ -56,7 +56,7 @@ class UploadRequest(Base):
   file_hash:            Mapped[str]        = mapped_column(String(64), unique=True, index=True) # ! SHA-256. CHECK: длина хеша
   workflow_status:      Mapped[WorkflowEnum] = mapped_column(Enum(WorkflowEnum, name='workflow_enum', native_enum=True), default=WorkflowEnum.UPLOADED) # WorkflowEnum(uploaded / processing / pending_review / accepted / rejected)
   rejection_reason:     Mapped[str | None] = mapped_column(Text)
-  processing_metadata:  Mapped[dict]       = mapped_column(JSONB, server_default=text("'{}'::jsonb'"))
+  processing_metadata:  Mapped[dict]       = mapped_column(JSONB, server_default=text("'{}'::jsonb"))
   created_at:           Mapped[datetime]   = mapped_column(DateTime(timezone=True), server_default=func.now())
 
   user            = relationship("User", foreign_keys=[uploader_id],  back_populates="uploads_created")
