@@ -32,8 +32,28 @@ services:
         condition: service_healthy
       postgres:
         condition: service_healthy
+      tika:
+        condition: service_healthy
     networks:
       - app-network
+    restart: unless-stopped
+
+
+  tika:
+    image: apache/tika:4.0.0-SNAPSHOT-full
+    container_name: tika_server
+    ports:
+      - "9998:9998"
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: "2.0"
+    healthcheck:
+      test: ["CMD-SHELL", "python3 -c \"import urllib.request; urllib.request.urlopen('http://localhost:9998')\""]
+      interval: 30s
+      timeout: 10s
+      retries: 3
     restart: unless-stopped
 
 
