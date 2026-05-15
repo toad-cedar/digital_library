@@ -51,7 +51,7 @@ class UploadService:
     await self.db_session.commit()
     
     # Диспетчеризация фоновой задачи (OCR + антивирус + конвертация)
-    await self._dispatch_processing_task(created.id)
+    self.__class__._dispatch_processing_task(created.id)
     
     return UploadRequestRead.model_validate(created)
 
@@ -67,7 +67,9 @@ class UploadService:
   def _dispatch_processing_task(upload_id: int) -> None:
     from rq import Retry
     from app.config.worker_config import default_queue, heavy_queue
-    from app.tasks.file_pipeline import validate_file_task, extract_text_task, finalize_upload_task
+    from app.tasks.file_pipeline import (
+      validate_file_task, extract_text_task, finalize_upload_task, publish_document_task, convert_to_pdf_task
+    )
 
     retry_policy = Retry(max=3, interval=[15, 60, 180])
 
@@ -96,10 +98,27 @@ class UploadService:
         job_timeout='5m'
       )
 
+      heavy_queue.enqueue(
+        publish_document_task, 
+        upload_id, 
+        depends_on=finalize_job, 
+        retry=Retry(max=2, interval=[30, 60])
+      )
+
+      heavy_queue.enqueue(
+        convert_to_pdf_task, 
+        upload_id, 
+        depends_on=finalize_job, 
+        retry=Retry(max=2, interval=[30, 60]), 
+        job_timeout="10m"
+      )
+      
+      
       logger.info(
         f"Pipeline dispatched: validate={validate_job.id}, "
         f"extract={extract_job.id}, finalize={finalize_job.id}"
       )
+      
     except Exception as e:
       logger.error(f"Failed to enqueue pipeline: {e}")
       raise
