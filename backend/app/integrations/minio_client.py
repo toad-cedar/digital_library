@@ -22,7 +22,7 @@ async def async_minio_safe_call(func, *args, max_retries: int = 3, **kwargs):
     try:
         async with session.client(
           's3',
-          endpoint_url=settings.MINIO_ENDPOINT,
+          endpoint_url=f"{'https' if settings.MINIO_SECURE else 'http'}://{settings.MINIO_ENDPOINT}",
           aws_access_key_id=settings.MINIO_ACCESS_KEY,
           aws_secret_access_key=settings.MINIO_SECRET_KEY,
           region_name=settings.MINIO_REGION,
