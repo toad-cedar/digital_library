@@ -42,6 +42,32 @@ class Settings(BaseSettings):
   SMTP_PORT: int = Field(default=587, alias='SMTP_PORT')
   SMTP_USE_TLS: bool = Field(default=True, alias='SMTP_USE_TLS')
   
+  TIKA_URL: str = Field(default="http://tika:9998", alias='TIKA_SERVER_URL')
+  TIKA_TIMEOUT: int = Field(default=120, alias='TIKA_TIMEOUT')
+  TIKA_JAR_PATH: str = Field(default='/opt/tika/tika-app.jar', alias='TIKA_JAR_PATH')
+  TIKA_MAX_HEAP: str = Field(default='512m', alias='TIKA_MAX_PATH')
+  
+  OCR_MEMORY_LIMIT: int = Field(alias='OCR_MEMORY_LIMIT')
+  MAX_UPLOAD_SIZE: int = Field(alias='MAX_UPLOAD_SIZE')
+  RISK_WEIGHTS: dict = Field(
+    default_factory=lambda: {
+      "new_account_days": 20,      # аккаунт младше 7 дней
+      "unknown_mime": 30,          # MIME не в белом списке
+      "no_ocr_text": 15,           # не извлечён текст для PDF/изображений
+      "hash_collision": 50,        # хеш совпадает с другим документом
+      "large_file": 10,            # файл > 50 МБ
+      "night_upload": 5,           # загрузка между 02:00-06:00
+    },
+    alias="RISK_WEIGHTS"
+  )
+  RISK_THRESHOLD_REJECT: int = Field(default=80, alias="RISK_THRESHOLD_REJECT")
+  RISK_THRESHOLD_REVIEW: int = Field(default=30, alias="RISK_THRESHOLD_REVIEW")
+  
+  CONVERSION_TIMEOUT: int = Field(..., alias='CONVERSION_TIMEOUT')
+  CONVERSION_MAX_PAGES: int = Field(..., alias='CONVERSION_MAX_PAGES')
+  CONVERSION_TARGET_FORMAT: str = Field(..., alias='CONVERSION_TARGET_FORMAT')
+  CONVERSION_SERVICE_URL: str = Field(..., alias='CONVERSION_SERVICE_URL')
+  
   OCR_SERVICE_URL: str = Field(..., alias='OCR_SERVICE_URL')
   ANTIVIRUS_SERVICE_URL: str = Field(..., alias='ANTIVIRUS_SERVICE_URL')
   CONVERSION_SERVICE_URL: str = Field(..., alias='CONVERSION_SERVICE_URL')
@@ -53,7 +79,6 @@ class Settings(BaseSettings):
     alias="ALLOWED_ORIGINS",
     description="Разрешённые CORS-источники"
   )
-  
   
   model_config = SettingsConfigDict(
     env_file=Path(__file__).resolve().parents[3] / '.env',
