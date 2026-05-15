@@ -9,6 +9,7 @@ from app.models.offline_models import OfflineFolder, OfflineItem
 from app.models.activity_models import HistoryView, HistoryDownload
 from app.models.moderation_models import Report, ModerationAssignment
 from app.models.system_models import AuditLog, Notification, RegistryDevice, SyncState
+from app.models.casbin_model import CasbinRule
 
 __all__ = [
   "User", "Role", "Permission", "roles_permissions",
@@ -20,5 +21,6 @@ __all__ = [
   "OfflineFolder", "OfflineItem",
   "HistoryView", "HistoryDownload",
   "Report", "ModerationAssignment",
-  "AuditLog", "Notification", "RegistryDevice", "SyncState"
+  "AuditLog", "Notification", "RegistryDevice", "SyncState",
+  "CasbinRule"
 ]
