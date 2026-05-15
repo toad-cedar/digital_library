@@ -1,155 +1,115 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.config.database   import get_db_session
-from app.config.deps       import get_current_user
-from app.models.orm_models import User
-from app.schemas import DocumentOut, DocumentListResponse, PreviewUrlResponse, StatusInfo, FormatInfo
-from app.schemas import UserShort
-from app.repos.document_repo    import DocumentRepository
+
+from app.config.database import get_db_session, VisibilityEnum
+from app.config.deps import get_current_user
+from app.services.document_service import DocumentService
 from app.services.minio_service import MinioService
-from pydantic import BaseModel
-from datetime import datetime, timedelta, timezone
-from typing   import List, Optional
+from app.auth.casbin.dependencies import require_permission
+from app.models.user_models import User
+from app.schemas import (
+  DocumentRead, DocumentListResponse, DownloadUrlResponse,
+  VisibilityUpdate, TagAssignRequest, VersionRead, ApiResponse
+)
+from typing import List, Optional
 
-router = APIRouter(prefix="/documents", tags=["Documents"])
 
+router = APIRouter(prefix="/api/v1/documents", tags=["Documents"])
 
-@router.get("/", response_model=DocumentListResponse, summary="Получить список документов")
+def _parse_visibility(status_str: Optional[str]) -> Optional[VisibilityEnum]:
+  if not status_str:
+    return None
+  try:
+    return VisibilityEnum(status_str.lower())
+  except ValueError:
+    return None
+
+@router.get("/", response_model=ApiResponse[DocumentListResponse])
 async def get_documents(
-  offset: int = Query(0, ge=0),
-  limit: int = Query(10, ge=1, le=100),
+  page: int = Query(1, ge=1),
+  page_size: int = Query(20, ge=1, le=100),
+  visibility_status: Optional[str] = Query(None),
+  format: Optional[str] = Query(None),
   db_session: AsyncSession = Depends(get_db_session)
 ):
-  """Получает список всех документов (для мин. версии)."""
-  repo = DocumentRepository(db_session)
-  documents, total_count = await repo.get_all(offset=offset, limit=limit, status=None) # TODO: сделать систему статусов
-
-  document_outs = []
-  for doc in documents:
-  # Явно формируем Pydantic-объект, преобразуя связи
-    doc_out = DocumentOut(
-      id=doc.id,
-      title=doc.title,
-      description=doc.description,
-      author=doc.author,
-      upload_date=doc.upload_date,
-      publish_date=doc.publish_date,
-      uploader=UserShort.model_validate(doc.uploader),
-      format=FormatInfo(id=doc.format_obj.id, name=doc.format_obj.format_name),
-      file_original_name=doc.file_original_name,
-      file_size=doc.file_size,
-      converted_to_pdf=doc.converted_to_pdf,
-      status_name=StatusInfo(id=doc.status_obj.id, name=doc.status_obj.status_name),
-      tags=[tag_obj.tag_name for tag_obj in doc.tags],
-      minio_bucket=doc.minio_bucket, 
-      cover_bucket=doc.cover_bucket, 
-      cover_url=doc.cover_url,
+  svc = DocumentService(db_session=db_session, minio_service=MinioService())
+  offset = (page - 1) * page_size
+  docs, total = await svc.doc_repo.get_all(
+    visibility=_parse_visibility(visibility_status), 
+    format_filter=format, 
+    offset=offset, 
+    limit=page_size
+  )
+  items = [DocumentRead.model_validate(d) for d in docs]
+  return ApiResponse(
+    success=True, 
+    data=DocumentListResponse(
+      documents=items, 
+      total=total, 
+      page=page, 
+      page_size=page_size
     )
-    document_outs.append(doc_out)
-
-  return DocumentListResponse(
-    total=total_count,
-    offset=offset,
-    limit=limit,
-    documents=document_outs
   )
 
-
-@router.get("/{document_id}", response_model=DocumentOut, summary="Получить метаданные документа")
+@router.get("/{document_id}", response_model=ApiResponse[DocumentRead])
 async def get_document(
   document_id: int,
+  current_user: User = Depends(get_current_user),
+  _: None = Depends(require_permission("document.read")),
   db_session: AsyncSession = Depends(get_db_session)
 ):
-  """Получает метаданные конкретного документа."""
-  repo = DocumentRepository(db_session)
-  doc = await repo.get_by_id(document_id)
-  if not doc:
-    raise HTTPException(status_code=404, detail="Document not found")
-  
-  doc_out = DocumentOut(
-      id=doc.id,
-      title=doc.title,
-      description=doc.description,
-      author=doc.author,
-      upload_date=doc.upload_date,
-      publish_date=doc.publish_date,
-      uploader=UserShort.model_validate(doc.uploader),
-      format=FormatInfo(id=doc.format_obj.id, name=doc.format_obj.format_name),
-      file_original_name=doc.file_original_name,
-      file_size=doc.file_size,
-      converted_to_pdf=doc.converted_to_pdf,
-      status_name=StatusInfo(id=doc.status_obj.id, name=doc.status_obj.status_name),
-      tags=[tag_obj.tag_name for tag_obj in doc.tags],
-      minio_bucket=doc.minio_bucket, 
-      cover_bucket=doc.cover_bucket, 
-      cover_url=doc.cover_url,
-    )
-  return doc_out
+  svc = DocumentService(db_session=db_session, minio_service=MinioService())
+  doc = await svc.get_by_id(document_id)
+  return ApiResponse(success=True, data=doc)
 
-# pydantic-схема
-class DownloadUrlResponse(BaseModel):
-  url: str
-  expires_at: datetime
-
-
-@router.get("/{document_id}/download-url", response_model=DownloadUrlResponse, summary="Получить URL для скачивания")
+@router.get("/{document_id}/download-url", response_model=ApiResponse[DownloadUrlResponse])
 async def get_download_url(
   document_id: int,
   current_user: User = Depends(get_current_user),
+  _: None = Depends(require_permission("document.download")),
   db_session: AsyncSession = Depends(get_db_session)
 ):
-  """Возвращает предварительно подписанный URL для скачивания файла из MinIO."""
-  repo = DocumentRepository(db_session)
-  doc  = await repo.get_by_id(document_id)
-  if not doc:
-    raise HTTPException(status_code=404, detail="Document not found")
-  if not doc.status_id: 
-    raise HTTPException(status_code=403, detail="Document is not approved yet")
-  
-  minio_service = MinioService()
-  expires_sec = 3600 # 1 час
-  url = await minio_service.get_presigned_url(
-    bucket_name=doc.minio_bucket,
-    object_name=doc.minio_object_path,
-    expires=expires_sec 
-  )
-  time_of_expire = datetime.now(timezone.utc) + timedelta(seconds=expires_sec)
-  
-  return DownloadUrlResponse(url=url, expires_at=time_of_expire)
+  svc = DocumentService(db_session=db_session, minio_service=MinioService())
+  return ApiResponse(success=True, data=await svc.get_download_url(document_id))
 
-
-@router.get("/{document_id}/preview-url", response_model=PreviewUrlResponse, summary="Получить URL для предпросмотра")
+@router.get("/{document_id}/preview-url", response_model=ApiResponse[DownloadUrlResponse])
 async def get_preview_url(
-    document_id: int,
-    current_user: User = Depends(get_current_user),
-    db_session: AsyncSession = Depends(get_db_session)
+  document_id: int,
+  current_user: User = Depends(get_current_user),
+  _: None = Depends(require_permission("document.read")),
+  db_session: AsyncSession = Depends(get_db_session)
 ):
-  """
-  Возвращает предварительно подписанный URL для предпросмотра файла из MinIO.
-  URL может быть использован напрямую в PDF.js или аналоге.
-  """
-  repo = DocumentRepository(db_session)
-  doc  = await repo.get_by_id(document_id)
-  if not doc:
-    raise HTTPException(status_code=404, detail="Document not found")
-  
-  if not doc.status_obj.status_name == "approved":
-    raise HTTPException(status_code=403, detail="Document is not approved yet")
+  svc = DocumentService(db_session=db_session, minio_service=MinioService())
+  return ApiResponse(success=True, data=await svc.get_download_url(document_id, expires_seconds=1800))
 
-  minio_service = MinioService()
-  
-  expires_seconds = 1800 # 30 минут
-  url = await minio_service.get_presigned_url(
-    bucket_name=doc.minio_bucket,
-    object_name=doc.minio_object_path, # Используем путь к ОСНОВНОМУ файлу
-    expires=expires_seconds
-  )
+@router.get("/{document_id}/versions", response_model=ApiResponse[List[VersionRead]])
+async def get_versions(
+  document_id: int,
+  current_user: User = Depends(get_current_user),
+  _: None = Depends(require_permission("document.read")),
+  db_session: AsyncSession = Depends(get_db_session)
+):
+  svc = DocumentService(db_session=db_session, minio_service=MinioService())
+  return ApiResponse(success=True, data=await svc.get_versions(document_id))
 
-  # Вычисляем время истечения
-  time_of_expire = datetime.now(timezone.utc) + timedelta(seconds=expires_seconds)
+@router.patch("/{document_id}/visibility", response_model=ApiResponse[DocumentRead])
+async def update_visibility(
+  document_id: int,
+  data: VisibilityUpdate,
+  current_user: User = Depends(get_current_user),
+  _: None = Depends(require_permission("document.manage")),
+  db_session: AsyncSession = Depends(get_db_session)
+):
+  svc = DocumentService(db_session=db_session, minio_service=MinioService())
+  return ApiResponse(success=True, data=await svc.update_visibility(document_id, data, current_user.id))
 
-  # Возвращаем объект, соответствующий PreviewUrlResponse
-  return PreviewUrlResponse(url=url, expires_at=time_of_expire)
-
-# Роутеры для обновления/удаления (для администраторов)
-# ...
+@router.post("/{document_id}/tags", response_model=ApiResponse[DocumentRead])
+async def assign_tags(
+  document_id: int,
+  data: TagAssignRequest,
+  current_user: User = Depends(get_current_user),
+  _: None = Depends(require_permission("document.manage")),
+  db_session: AsyncSession = Depends(get_db_session)
+):
+  svc = DocumentService(db_session=db_session, minio_service=MinioService())
+  return ApiResponse(success=True, data=await svc.assign_tags(document_id, data, current_user.id))

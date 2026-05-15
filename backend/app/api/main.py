@@ -6,8 +6,8 @@ import asyncio
 from app.api.routers import documents, search, uploads, auth
 from app.auth.casbin.bootstrap import bootstrap_policies
 from app.config.settings import get_settings
-from app.models import __all__
-from app.schemas import __all__
+from app.models import *
+from app.schemas import *
 
 
 @asynccontextmanager
@@ -20,7 +20,6 @@ app = FastAPI(
   version="0.1.0", 
   lifespan=lifespan,
 )
-
 app.add_middleware(
   CORSMiddleware,
   allow_origins=get_settings().ALLOWED_ORIGINS,
@@ -29,22 +28,21 @@ app.add_middleware(
   allow_headers=["*"], # Authorization, Content-Type и т.д.
 )
 
-
-app.include_router(documents.router, prefix="/api", tags=["Documents"]) 
-app.include_router(search.router,    prefix="/api", tags=["Search"])
-app.include_router(uploads.router,   prefix="/api", tags=["Uploads"])
-app.include_router(auth.router,      prefix="/api", tags=["Authentication"])
+app.include_router(auth.router, prefix="", tags=["Authentication"])
+app.include_router(documents.router, prefix="", tags=["Documents"])
+app.include_router(search.router, prefix="", tags=["Search"])
+app.include_router(uploads.router, prefix="", tags=["Uploads"])
 
 # TODO: Дополнительные роутеры
-# app.include_router(users.router,   prefix="/api",  tags=["Users"])
-# app.include_router(admin.router,   prefix="/api/admin",   tags=["Admin Panel"])
-# app.include_router(teacher.router, prefix="/api/teacher", tags=["Teacher Panel"])
-# app.include_router(history.router, prefix="/api",  tags=["History"])
-# app.include_router(favorites.router, prefix="/api", tags=["Favorites"])
-# app.include_router(offline.router, prefix="/api",  tags=["Offline Library"])
-# app.include_router(groups.router,  prefix="/api",  tags=["Groups"])
+# app.include_router(moderation.router, prefix="", tags=["Moderation"])
+# app.include_router(favorites.router, prefix="", tags=["Favorites"])
+# app.include_router(groups.router, prefix="", tags=["Groups"])
+# app.include_router(offline.router, prefix="", tags=["Offline"])
+# app.include_router(notifications.router, prefix="", tags=["Notifications"])
+# app.include_router(users.router, prefix="", tags=["Users"])
+# app.include_router(admin.router, prefix="", tags=["Admin"])
 
 
-@app.get("/")
+@app.get("/", tags=["Health"])
 def read_root():
-  return { "message": "API is working" }
+  return {"success": True, "data": {"message": "API is working"}}
