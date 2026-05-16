@@ -66,10 +66,12 @@ class UploadService:
   @staticmethod
   def _dispatch_processing_task(upload_id: int) -> None:
     from rq import Retry
-    from app.config.worker_config import default_queue, heavy_queue
+    from app.config.worker_config import default_queue, heavy_queue, moderation_queue
     from app.tasks.file_pipeline import (
       validate_file_task, extract_text_task, finalize_upload_task, publish_document_task, convert_to_pdf_task
     )
+    from app.tasks.moderation_tasks import assign_moderator_task
+
 
     retry_policy = Retry(max=3, interval=[15, 60, 180])
 
@@ -113,6 +115,23 @@ class UploadService:
         job_timeout="10m"
       )
       
+      default_queue.enqueue(
+        assign_moderator_task,
+        upload_id,
+        depends_on=finalize_job,
+        retry=Retry(max=2, interval=[30, 60]),
+        job_timeout='1m',
+        meta={'upload_id': upload_id}
+    )
+      
+      moderation_queue.enqueue(
+        assign_moderator_task,
+        upload_id,
+        depends_on=finalize_job,
+        retry=None, 
+        job_timeout='1m',
+        meta={'upload_id': upload_id}
+      )
       
       logger.info(
         f"Pipeline dispatched: validate={validate_job.id}, "
