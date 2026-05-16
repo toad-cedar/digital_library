@@ -4,6 +4,7 @@ class Permissions:
   DOCUMENT_UPDATE    = "document.update"
   DOCUMENT_DELETE    = "document.delete"
   DOCUMENT_PUBLISH   = "document.publish"
+  DOCUMENT_REPORT    = "document.report"
 
   UPLOAD_CREATE      = "upload.create"
   UPLOAD_REVIEW      = "upload.review"
