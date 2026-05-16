@@ -1,7 +1,7 @@
 from typing import List, Optional, Tuple
 from datetime import datetime, timezone
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func, update
+from sqlalchemy import select, func, update, insert
 from app.models.processing_models import ConversionJob, HistoryVersion
 from app.config.database import ConversionEnum
 from app.repos.base_repo import GenericRepository
@@ -41,6 +41,41 @@ class ProcessingRepository:
     count = (await self.db.execute(select(func.count(HistoryVersion.id)).where(HistoryVersion.document_id == document_id))).scalar() or 0
     items = (await self.db.execute(base.order_by(HistoryVersion.version_number.desc()).offset(offset).limit(limit))).scalars().all()
     return items, count
+  
+  async def get_next_version_number(self, document_id: int) -> int:
+    """Атомарно получает следующий номер версии с блокировкой строк"""
+    stmt = (
+      select(func.coalesce(func.max(HistoryVersion.version_number), 0) + 1)
+      .where(HistoryVersion.document_id == document_id)
+      .with_for_update()
+    )
+    return (await self.db.execute(stmt)).scalar_one()
 
-  async def create_version(self, version: HistoryVersion) -> HistoryVersion:
-    return await self.versions.create(version)
+  async def create_version(
+    self,
+    document_id: int,
+    file_hash: str,
+    minio_path: str,
+    minio_bucket: str,
+    file_size: int,
+    file_format: str,
+    uploaded_by: int,
+    change_notes: Optional[str] = None
+  ) -> HistoryVersion:
+    """Создаёт запись версии, самостоятельно рассчитывая `version_number`"""
+    version_number = await self.get_next_version_number(document_id)
+    
+    version = HistoryVersion(
+      document_id=document_id,
+      version_number=version_number,
+      file_hash=file_hash,
+      minio_path=minio_path,
+      minio_bucket=minio_bucket,
+      file_size=file_size,
+      file_format=file_format,
+      uploaded_by=uploaded_by,
+      change_notes=change_notes
+    )
+    self.db.add(version)
+    await self.db.flush()
+    return version
