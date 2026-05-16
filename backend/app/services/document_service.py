@@ -1,13 +1,12 @@
 from datetime import datetime, timedelta, timezone
-from typing import List
+from typing import List, Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.repos.document_repo import DocumentRepository
 from app.repos.tag_repo import TagRepository
 from app.services.minio_service import MinioService
-from app.config.database import VisibilityEnum
 from app.schemas.document import (
-    DocumentRead, DocumentUpdate, VisibilityUpdate, 
-    TagAssignRequest, VersionRead, DownloadUrlResponse
+  DocumentRead, DocumentUpdate, VisibilityUpdate,
+  TagAssignRequest, VersionRead, DownloadUrlResponse
 )
 import logging
 
@@ -16,6 +15,7 @@ logger = logging.getLogger(__name__)
 
 class DocumentService:
   def __init__(self, db_session: AsyncSession, minio_service: MinioService):
+    self.db_session = db_session
     self.doc_repo = DocumentRepository(db_session)
     self.tag_repo = TagRepository(db_session)
     self.minio_service = minio_service
@@ -37,33 +37,31 @@ class DocumentService:
     url = await self.minio_service.get_presigned_url(doc.minio_bucket, doc.minio_object_path, expires_seconds)  
     return DownloadUrlResponse(url=url, expires_at=datetime.now(timezone.utc)+ timedelta(seconds=expires_seconds))
 
-  async def update_visibility(self, doc_id: int, data: VisibilityUpdate, uploader_id: int) -> DocumentRead: 
+  async def update_visibility(self, doc_id: int, data: VisibilityUpdate) -> DocumentRead: 
+    # Проверка прав делегирована Casbin на уровне API
     doc = await self.doc_repo.get_by_id(doc_id)
-    if not doc or doc.uploader_id != uploader_id:
-      raise ValueError("Access denied")
-    
+    if not doc:
+      raise ValueError("Document not found")
     target_status = VisibilityEnum(data.visibility_status)
     updated = await self.doc_repo.update(doc_id, {"visibility_status": target_status})
     await self.db_session.commit()
     return DocumentRead.model_validate(updated)
 
-  async def update_metadata(self, doc_id: int, data: DocumentUpdate, uploader_id: int) -> DocumentRead:
+  async def update_metadata(self, doc_id: int, data: DocumentUpdate) -> DocumentRead:
     doc = await self.doc_repo.get_by_id(doc_id)
-    if not doc or doc.uploader_id != uploader_id:
-      raise ValueError("Access denied")
-        
+    if not doc:
+      raise ValueError("Document not found")
     update_data = {k: v for k, v in data.model_dump(exclude_unset=True).items() if v is not None}
     if not update_data:
       return DocumentRead.model_validate(doc)
-        
     updated = await self.doc_repo.update(doc_id, update_data)
     await self.db_session.commit()
     return DocumentRead.model_validate(updated)
 
-  async def assign_tags(self, doc_id: int, data: TagAssignRequest, uploader_id: int) -> DocumentRead:
+  async def assign_tags(self, doc_id: int, data: TagAssignRequest) -> DocumentRead:
     doc = await self.doc_repo.get_by_id(doc_id)
-    if not doc or doc.uploader_id != uploader_id:
-      raise ValueError("Access denied")
+    if not doc:
+      raise ValueError("Document not found")
     
     await self.tag_repo.unlink_document(doc_id)
     tags = [await self.tag_repo.get_or_create_by_name(t) for t in data.tags]
