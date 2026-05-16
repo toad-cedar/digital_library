@@ -13,7 +13,7 @@ class Report(Base):
   target_id:       Mapped[int]        # Динамический FK (логика приложения)
   reason_category: Mapped[ReportCategoryEnum] = mapped_column(Enum(ReportCategoryEnum, name='report_category_enum', native_enum=True)) # copyright / inappropriate / virus / other (ввести свою прчиину). Не ENUM
   description:     Mapped[str | None] = mapped_column(Text) # Текст жалобы
-  report_status:   Mapped[ReportEnum] = mapped_column(Enum(ReportEnum, name='report_enum', native_enum=True), default=ReportEnum.PENDING) # ReportEnum(pending / in_review / resolved / rejected)
+  report_status:   Mapped[ReportEnum] = mapped_column(Enum(ReportEnum, name='report_enum', native_enum=True), default=ReportEnum.PENDING, index=True) # ReportEnum(pending / in_review / resolved / rejected)
   created_at:      Mapped[datetime]   = mapped_column(DateTime(timezone=True), server_default=func.now())
   resolved_at:     Mapped[datetime | None] = mapped_column(DateTime()) # Время разрешения
   resolved_by:     Mapped[int | None] = mapped_column(ForeignKey('users.id', ondelete='SET NULL'), index=True) # Модератор

@@ -33,8 +33,8 @@ class HistoryVersion(Base):
     ),
   )
   id:             Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-  document_id:    Mapped[int] = mapped_column(ForeignKey('documents.id', ondelete='CASCADE'), index=True)
-  version_number: Mapped[int] = mapped_column(index=True) # Номер версии
+  document_id:    Mapped[int] = mapped_column(ForeignKey('documents.id', ondelete='CASCADE'))
+  version_number: Mapped[int] = mapped_column() # Номер версии
   minio_path:     Mapped[str] = mapped_column(String(500)) # Путь к архивной версии
   minio_bucket:   Mapped[str] = mapped_column(String(100)) # Бакет
   file_hash:      Mapped[str] = mapped_column(String(64), unique=True)
