@@ -40,6 +40,9 @@ class UploadRequestRepository:
   async def create(self, request: UploadRequest) -> UploadRequest:
     return await self.base.create(request)
 
+  async def delete(self, upload_id: int) -> bool:
+    return await self.base.delete(upload_id)
+
   async def update_workflow_status(
     self,
     upload_id: int,
@@ -51,6 +54,3 @@ class UploadRequestRepository:
     if rejection_reason is not None:
       data["rejection_reason"] = rejection_reason
     return await self.base.update(upload_id, data)
-
-  async def delete(self, upload_id: int) -> bool:
-    return await self.base.delete(upload_id)
